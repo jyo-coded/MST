@@ -1,0 +1,22 @@
+{
+  "name": "civicproof",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CivicProof: city machines that pay only for physically verified public work, settled on MST Blockchain.",
+  "workspaces": [
+    "contracts",
+    "backend"
+  ],
+  "scripts": {
+    "compile": "npm run compile -w contracts",
+    "test": "npm test -w contracts && npm test -w backend",
+    "node": "npm run node -w contracts",
+    "keys": "npm run keys -w backend",
+    "deploy:local": "npm run deploy:local -w contracts",
+    "deploy:testnet": "npm run deploy:testnet -w contracts",
+    "setup:local": "npm run setup:local -w contracts",
+    "setup:testnet": "npm run setup:testnet -w contracts",
+    "backend": "npm run dev -w backend",
+    "demo": "npm run demo -w backend"
+  }
+}

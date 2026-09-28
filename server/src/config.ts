@@ -47,9 +47,16 @@ const HARDHAT = {
   ],
 };
 
+// One funded key is enough for a demo: it plays every role, and the device and
+// worker identities are derived from it deterministically.
+const MST_KEY = str("MST_PRIVATE_KEY");
+const derived = (label: string) => (MST_KEY ? ethers.keccak256(ethers.toUtf8Bytes(`astra:${label}:${MST_KEY}`)) : "");
+const derivedMnemonic = (label: string) => (MST_KEY ? ethers.Mnemonic.fromEntropy(ethers.dataSlice(derived(label), 0, 16)).phrase : "");
+
 function key(name: string, localIndex: number): string {
   const v = str(name);
   if (v) return v;
+  if (MST_KEY && !isLocal) return MST_KEY;
   return isLocal ? HARDHAT.keys[localIndex] : "";
 }
 
@@ -77,9 +84,9 @@ export const config = {
     gateway: key("GATEWAY_PRIVATE_KEY", 1),
     officer: key("OFFICER_PRIVATE_KEY", 2),
     verifier: key("VERIFIER_PRIVATE_KEY", 3),
-    deviceMnemonic: str("DEVICE_MNEMONIC", isLocal ? HARDHAT.mnemonic : ""),
-    workerMnemonic: str("WORKER_MNEMONIC", isLocal ? HARDHAT.mnemonic : ""),
-    deviceMasterSecret: str("DEVICE_MASTER_SECRET", isLocal ? "local-dev-device-secret" : ""),
+    deviceMnemonic: str("DEVICE_MNEMONIC", isLocal ? HARDHAT.mnemonic : derivedMnemonic("devices")),
+    workerMnemonic: str("WORKER_MNEMONIC", isLocal ? HARDHAT.mnemonic : derivedMnemonic("workers")),
+    deviceMasterSecret: str("DEVICE_MASTER_SECRET", isLocal ? "local-dev-device-secret" : derived("device-secret")),
   },
 
   overrides: {

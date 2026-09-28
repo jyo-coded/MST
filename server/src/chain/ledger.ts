@@ -158,8 +158,8 @@ export class Ledger {
   readonly deployment: Deployment;
   readonly domain: ethers.TypedDataDomain;
 
-  private nonces = new Map<SignerKind, number>();
-  private queues = new Map<SignerKind, Promise<unknown>>();
+  private nonces = new Map<string, number>(); // by signer address: roles may share a key
+  private queues = new Map<string, Promise<unknown>>();
 
   constructor(deployment: Deployment) {
     this.deployment = deployment;
@@ -256,7 +256,7 @@ export class Ledger {
       try {
         return await client.signer!.sendTransaction({ to: this.address, data, value, nonce, ...(gasLimit ? { gasLimit } : {}) });
       } catch (err) {
-        this.nonces.delete(kind); // resync on next send
+        this.nonces.delete(from); // resync on next send
         throw new ChainError(`${method} failed to broadcast: ${this.decodeError(err)}`, this.decodeError(err));
       }
     });
@@ -418,18 +418,19 @@ export class Ledger {
   }
 
   private enqueue<T>(kind: SignerKind, fn: () => Promise<T>): Promise<T> {
-    const prev = this.queues.get(kind) ?? Promise.resolve();
+    const addr = this.clients[kind]!.signer!.address;
+    const prev = this.queues.get(addr) ?? Promise.resolve();
     const next = prev.then(fn, fn);
-    this.queues.set(kind, next.catch(() => undefined));
+    this.queues.set(addr, next.catch(() => undefined));
     return next;
   }
 
   private async nextNonce(kind: SignerKind): Promise<number> {
     const address = this.clients[kind]!.signer!.address;
-    const known = this.nonces.get(kind);
+    const known = this.nonces.get(address);
     const chainPending = await this.provider.getTransactionCount(address, "pending");
     const n = known === undefined ? chainPending : Math.max(known, chainPending);
-    this.nonces.set(kind, n + 1);
+    this.nonces.set(address, n + 1);
     return n;
   }
 }

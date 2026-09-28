@@ -8,3 +8,5 @@ firmware/**/build/
 *.log
 .DS_Store
 deployments/localhost.json
+server/data/
+web/dist/

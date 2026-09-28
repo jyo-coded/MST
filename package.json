@@ -1,22 +1,26 @@
 {
-  "name": "civicproof",
-  "version": "0.1.0",
+  "name": "astra-waste",
+  "version": "1.0.0",
   "private": true,
-  "description": "CivicProof: city machines that pay only for physically verified public work, settled on MST Blockchain.",
+  "description": "Smart municipal waste collection: IoT sensor fusion, AI verification, RFID-verified workers and MST Blockchain settlement.",
   "workspaces": [
+    "shared",
     "contracts",
-    "backend"
+    "server",
+    "web"
   ],
   "scripts": {
-    "compile": "npm run compile -w contracts",
-    "test": "npm test -w contracts && npm test -w backend",
-    "node": "npm run node -w contracts",
-    "keys": "npm run keys -w backend",
-    "deploy:local": "npm run deploy:local -w contracts",
-    "deploy:testnet": "npm run deploy:testnet -w contracts",
-    "setup:local": "npm run setup:local -w contracts",
-    "setup:testnet": "npm run setup:testnet -w contracts",
-    "backend": "npm run dev -w backend",
-    "demo": "npm run demo -w backend"
+    "compile": "npm run compile -w contracts && npm run artifact -w server",
+    "test": "npm test -w contracts && npm test -w server",
+    "chain": "npm run node -w contracts",
+    "keys": "npm run keys -w server",
+    "deploy": "npm run deploy -w server",
+    "setup": "npm run setup -w server",
+    "doctor": "npm run doctor -w server",
+    "local": "npm run local -w server",
+    "dev": "npm run dev -w server",
+    "dev:web": "npm run dev -w web",
+    "build": "npm run build -w web",
+    "start": "npm run start -w server"
   }
 }

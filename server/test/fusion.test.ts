@@ -38,9 +38,12 @@ test("unauthenticated packets can never verify", () => {
   assert.equal(r.verified, false);
 });
 
-function collection(after: number, rfid = true) {
+function collection(after: number, rfid = true, weights?: number[], extra: Record<string, unknown> = {}) {
   const steps = [94, 94, 80, 62, 44, 30, after, after];
-  const window = steps.map((f, i) => s(i, Math.max(f, after), Math.max(f, after) + 1, i >= 1 && i <= 6 ? "open" : "closed"));
+  const window = steps.map((f, i) => ({
+    ...s(i, Math.max(f, after), Math.max(f, after) + 1, i >= 1 && i <= 6 ? "open" : "closed"),
+    ...(weights ? { weightG: weights[i] } : {}),
+  }));
   return verifyCompletion({
     binId: "BIN-001",
     requestId: 1,
@@ -57,6 +60,7 @@ function collection(after: number, rfid = true) {
     lidClosedAt: new Date(t0 + 21000).toISOString(),
     workerDistanceM: 4,
     minConfidence: 80,
+    ...extra,
   });
 }
 
@@ -71,6 +75,32 @@ test("a real collection is verified and summarised", () => {
 test("a partial collection and a collection without RFID are not verified", () => {
   assert.equal(collection(75).decision, "COLLECTION_NOT_VERIFIED");
   assert.equal(collection(17, false).decision, "COLLECTION_NOT_VERIFIED");
+});
+
+const HEAVY_TO_EMPTY = [9000, 9000, 7800, 6200, 4300, 3000, 2100, 2100]; // grams: 6.9 kg left the bin
+const NO_CHANGE = [9000, 9010, 8995, 9005, 9000, 9002, 8998, 9001]; // level "dropped", weight did not
+
+test("load cell agreeing with the level drop keeps the collection verified", () => {
+  const r = collection(17, true, HEAVY_TO_EMPTY);
+  assert.equal(r.decision, "COLLECTION_VERIFIED");
+  assert.equal(r.summary.weightSensor, "present");
+  assert.ok((r.summary.weightRemovedG as number) > 6000);
+});
+
+test("ultrasonic says emptied but the load cell did not move: rejected (spoofed or blocked sensors)", () => {
+  const r = collection(17, true, NO_CHANGE);
+  assert.equal(r.decision, "COLLECTION_NOT_VERIFIED");
+  assert.ok(r.checks.filter((c) => !c.pass).map((c) => c.id).includes("WEIGHT_DROPPED"));
+  assert.match(r.reasons[0], /load cell/i);
+});
+
+test("a bin that must report weight cannot verify without it; bins without a load cell are unaffected", () => {
+  const strict = collection(17, true, undefined, { requireWeight: true });
+  assert.equal(strict.decision, "COLLECTION_NOT_VERIFIED");
+  assert.ok(strict.checks.some((c) => c.id === "WEIGHT_PRESENT" && !c.pass));
+  const legacy = collection(17, true);
+  assert.equal(legacy.decision, "COLLECTION_VERIFIED");
+  assert.equal(legacy.summary.weightSensor, "absent (not required)");
 });
 
 test("state machines refuse shortcuts", () => {

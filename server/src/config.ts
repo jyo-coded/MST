@@ -117,6 +117,13 @@ export const config = {
     pace: num("SIM_PACE", 1),
   },
 
+  verify: {
+    // When true, a completion from a bin without a load cell reading is never verified.
+    requireWeight: bool("REQUIRE_WEIGHT", false),
+    // Minimum weight (grams) a genuine collection must remove when a load cell is present.
+    minWeightRemovedG: num("MIN_WEIGHT_REMOVED_G", 300),
+  },
+
   payment: {
     defaultMstc: str("DEFAULT_PAYOUT_MSTC", "0.05"),
     inrPerMstc: num("INR_PER_MSTC", 1000),
@@ -203,8 +210,20 @@ export function workerWallet(workerId: string): string {
   return ethers.HDNodeWallet.fromPhrase(config.keys.workerMnemonic, undefined, `m/44'/60'/2'/0/${indexOf(workerId)}`).address;
 }
 
+/**
+ * On-chain identifier of a worker's RFID card. Card UIDs are only 4 bytes, so a
+ * plain keccak(uid) published in a contract event can be brute-forced in
+ * seconds. The hash is therefore keyed with a server-held secret: the chain
+ * still binds a card to a worker, but nobody can recover the UID from it.
+ * (This hides the UID from chain observers; it does not stop someone who
+ * physically reads a card from cloning it. That needs the worker's wallet
+ * signature as a second factor, see docs/THREAT_MODEL.md.)
+ */
 export function rfidHash(uid: string): string {
-  return ethers.keccak256(ethers.toUtf8Bytes(uid.replace(/[^0-9a-fA-F]/g, "").toUpperCase()));
+  const clean = uid.replace(/[^0-9a-fA-F]/g, "").toUpperCase();
+  if (!config.keys.deviceMasterSecret) throw new Error("DEVICE_MASTER_SECRET is not set (npm run keys)");
+  const salt = crypto.createHmac("sha256", config.keys.deviceMasterSecret).update("astra:rfid-salt:v1").digest();
+  return ethers.keccak256(ethers.concat([salt, ethers.toUtf8Bytes(clean)]));
 }
 
 export function normalizeUid(uid: string): string {

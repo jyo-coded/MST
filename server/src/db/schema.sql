@@ -294,3 +294,6 @@ CREATE TABLE IF NOT EXISTS settings (
   value       JSONB NOT NULL,
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Optional load-cell reading (grams, whole bin). Idempotent for existing databases.
+ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS weight_g DOUBLE PRECISION;

@@ -17,6 +17,7 @@ export type Sample = {
   lid: string;
   servo: string;
   ir: number; // IR deposits in this packet
+  weightG?: number | null; // load cell, grams (optional hardware)
 };
 
 export type Check = {
@@ -271,6 +272,8 @@ export function verifyCompletion(input: {
   assignedAt: string | null;
   workerDistanceM: number | null;
   minConfidence: number;
+  requireWeight?: boolean; // a load-cell reading is mandatory for this bin
+  minWeightRemovedG?: number; // grams a genuine collection must remove (default 300)
 }): FusionResult {
   const checks: Check[] = [];
   const drop = input.before - input.after;
@@ -444,6 +447,47 @@ export function verifyCompletion(input: {
     reason: ordered ? "Events happened in the expected order" : "Hardware events are out of order or missing",
   });
 
+
+  // Independent physical modality: the load cell. Two ultrasonic sensors can be
+  // blocked or fooled together; weight has to genuinely leave the bin.
+  const median = (a: number[]) => {
+    const v = [...a].sort((x, y) => x - y);
+    return v.length % 2 ? v[(v.length - 1) / 2] : (v[v.length / 2 - 1] + v[v.length / 2]) / 2;
+  };
+  const weights = input.window.map((s) => s.weightG).filter((w): w is number => typeof w === "number" && Number.isFinite(w));
+  const wBefore = weights.length >= 2 ? median(weights.slice(0, Math.min(3, weights.length))) : null;
+  const wAfter = weights.length >= 2 ? median(weights.slice(-Math.min(3, weights.length))) : null;
+  const minRemovedG = input.minWeightRemovedG ?? 300;
+  const weightRemovedG = wBefore !== null && wAfter !== null ? wBefore - wAfter : null;
+  if (weightRemovedG !== null) {
+    const ok = weightRemovedG >= minRemovedG;
+    checks.push({
+      id: "WEIGHT_DROPPED",
+      label: "Load cell confirms removal",
+      observed: `${Math.round(wBefore!)} g → ${Math.round(wAfter!)} g (−${Math.max(0, Math.round(weightRemovedG))} g)`,
+      expected: `≥ ${minRemovedG} g removed`,
+      pass: ok,
+      score: clamp(weightRemovedG / minRemovedG, 0, 1),
+      weight: 3,
+      critical: true,
+      reason: ok
+        ? `Load cell agrees: ${Math.round(weightRemovedG)} g of waste left the bin`
+        : `Level sensors say the bin was emptied but the load cell only lost ${Math.max(0, Math.round(weightRemovedG))} g. Ultrasonic sensors may be blocked or spoofed`,
+    });
+  } else if (input.requireWeight) {
+    checks.push({
+      id: "WEIGHT_PRESENT",
+      label: "Load cell reading present",
+      observed: "no weight readings",
+      expected: "load cell readings before and after",
+      pass: false,
+      score: 0,
+      weight: 3,
+      critical: true,
+      reason: "This bin must report weight, and no load cell readings were received",
+    });
+  }
+
   const evidence = {
     binId: input.binId,
     requestId: input.requestId,
@@ -453,7 +497,9 @@ export function verifyCompletion(input: {
     rfidAt: input.rfidAt,
     lidOpenedAt: input.lidOpenedAt,
     lidClosedAt: input.lidClosedAt,
-    samples: input.window.map((s) => [s.ts, s.fill, s.fill2, s.lid, s.ir]),
+    samples: input.window.map((s) => [s.ts, s.fill, s.fill2, s.lid, s.ir, s.weightG ?? null]),
+    weightBeforeG: wBefore,
+    weightAfterG: wAfter,
   };
   return finish(
     "completion",
@@ -467,6 +513,8 @@ export function verifyCompletion(input: {
       lidClosed: closed,
       rfidVerified: input.rfidVerified,
       durationSec: Number.isFinite(durSec) ? Math.round(durSec) : null,
+      weightSensor: weightRemovedG !== null ? "present" : input.requireWeight ? "required but missing" : "absent (not required)",
+      weightRemovedG: weightRemovedG !== null ? Math.round(weightRemovedG) : null,
     },
     evidence,
     uncertainty(agree, detrendedStdev(input.window.slice(-3).map((s) => s.fill))),

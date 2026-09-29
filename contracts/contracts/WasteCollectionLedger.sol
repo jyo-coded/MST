@@ -180,6 +180,9 @@ contract WasteCollectionLedger is AccessControl, Pausable, ReentrancyGuard, EIP7
     uint256 public latestRequestId;
     uint256 public incidentCount;
     uint256 public totalPaid;
+    /// Seconds an assigned or in-progress collection may sit idle before anyone
+    /// can expire it and free the escrow. Admin-tunable; default 6 hours.
+    uint32 public collectionTimeout = 6 hours;
 
     mapping(bytes32 => Bin) private _bins;
     mapping(bytes32 => Worker) private _workers;
@@ -211,6 +214,10 @@ contract WasteCollectionLedger is AccessControl, Pausable, ReentrancyGuard, EIP7
         address indexed officer
     );
     event AssignmentCancelled(uint256 indexed requestId, bytes32 indexed workerId, address indexed officer, bytes32 reasonHash);
+    event CollectionTimeoutUpdated(uint32 seconds_);
+    /// Job returned to the queue: the worker never finished (aborted by an
+    /// officer, or expired by anyone once the timeout passed).
+    event CollectionAborted(uint256 indexed requestId, bytes32 indexed workerId, address indexed by, bool expired, bytes32 reasonHash);
     event RfidVerified(uint256 indexed requestId, bytes32 indexed workerId, bytes32 tagHash);
     event RfidMismatch(uint256 indexed requestId, bytes32 indexed binId, bytes32 tagHash, bytes32 expectedWorker);
     event CollectionCompleted(
@@ -256,6 +263,8 @@ contract WasteCollectionLedger is AccessControl, Pausable, ReentrancyGuard, EIP7
     error InsufficientFunds(uint256 available, uint256 required);
     error InsufficientRemoval(uint256 removed, uint256 required);
     error TransferFailed();
+    error TimeoutNotReached(uint256 readyAt, uint256 nowTs);
+    error TimeoutOutOfRange();
 
     constructor(address admin, Policy memory initialPolicy) EIP712("WasteCollectionLedger", "1") {
         if (admin == address(0)) revert ZeroAddress();
@@ -269,6 +278,12 @@ contract WasteCollectionLedger is AccessControl, Pausable, ReentrancyGuard, EIP7
     function setPolicy(Policy calldata p) external onlyRole(DEFAULT_ADMIN_ROLE) {
         policy = p;
         emit PolicyUpdated(p);
+    }
+
+    function setCollectionTimeout(uint32 seconds_) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (seconds_ < 15 minutes || seconds_ > 30 days) revert TimeoutOutOfRange();
+        collectionTimeout = seconds_;
+        emit CollectionTimeoutUpdated(seconds_);
     }
 
     function registerBins(BinInput[] calldata bins) external onlyRole(DEFAULT_ADMIN_ROLE) {
@@ -467,6 +482,41 @@ contract WasteCollectionLedger is AccessControl, Pausable, ReentrancyGuard, EIP7
         q.completionVerified = ok;
         q.status = ok ? Status.AwaitingApproval : Status.Investigation;
         emit CollectionCompleted(e.requestId, e.fillBefore, e.fillAfter, v.confidenceBps, ok, e.evidenceHash, v.reportHash);
+    }
+
+    /// @notice The worker scanned in but never finished (or vanished after
+    /// assignment). An officer can pull the job back to the queue at any time.
+    function abortCollection(uint256 requestId, bytes32 reasonHash) external onlyRole(OFFICER_ROLE) {
+        Request storage q = _requests[requestId];
+        if (q.status != Status.InProgress) revert WrongStatus(requestId, q.status);
+        _returnToQueue(requestId, q, msg.sender, false, reasonHash);
+    }
+
+    /// @notice Permissionless escape hatch: once the timeout has passed, ANYONE
+    /// can return a stalled Assigned/InProgress job to the queue and release
+    /// the escrow. No officer, and no server, has to be online for funds and
+    /// the bin to become usable again.
+    function expireCollection(uint256 requestId) external {
+        Request storage q = _requests[requestId];
+        uint256 since;
+        if (q.status == Status.Assigned) since = q.assignedAt;
+        else if (q.status == Status.InProgress) since = q.startedAt;
+        else revert WrongStatus(requestId, q.status);
+        uint256 readyAt = since + collectionTimeout;
+        if (block.timestamp < readyAt) revert TimeoutNotReached(readyAt, block.timestamp);
+        _returnToQueue(requestId, q, msg.sender, true, bytes32(0));
+    }
+
+    function _returnToQueue(uint256 requestId, Request storage q, address by, bool expired, bytes32 reasonHash) internal {
+        bytes32 workerId = q.workerId;
+        reserved -= q.amount;
+        _workers[workerId].rejected += 1;
+        q.amount = 0;
+        q.workerId = bytes32(0);
+        q.startedAt = 0;
+        q.assignedAt = 0;
+        q.status = Status.Approved; // bin stays reserved for this request; officer reassigns
+        emit CollectionAborted(requestId, workerId, by, expired, reasonHash);
     }
 
     /// @notice An officer wants to look closer before approving.

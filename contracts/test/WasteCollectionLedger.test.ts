@@ -366,4 +366,88 @@ describe("WasteCollectionLedger", () => {
       );
     });
   });
+
+  describe("stalled jobs (no stuck escrow, no stuck bin)", () => {
+    const HOUR = 3600;
+
+    it("an officer can abort an in-progress job: escrow is freed and the job returns to the queue", async () => {
+      await toAssigned(ctx, 1n);
+      await rfid(ctx, 1n);
+      expect(await ctx.ledger.reserved()).to.equal(PAY);
+      await expect(ctx.ledger.connect(ctx.officer).abortCollection(1n, ethers.id("worker left")))
+        .to.emit(ctx.ledger, "CollectionAborted")
+        .withArgs(1n, WORKER, ctx.officer.address, false, ethers.id("worker left"));
+      expect(await ctx.ledger.reserved()).to.equal(0n);
+      const r = await ctx.ledger.getRequest(1n);
+      expect(r.status).to.equal(S.Approved);
+      expect(r.amount).to.equal(0n);
+      expect((await ctx.ledger.getWorker(WORKER)).rejected).to.equal(1n);
+      // and it can be assigned to someone else and paid normally
+      await ctx.ledger.connect(ctx.officer).assignWorker(1n, OTHER_WORKER, PAY);
+      expect((await ctx.ledger.getRequest(1n)).status).to.equal(S.Assigned);
+    });
+
+    it("only an officer can abort, and only while the job is in progress", async () => {
+      await toAssigned(ctx, 1n);
+      await expect(ctx.ledger.connect(ctx.officer).abortCollection(1n, ethers.ZeroHash)).to.be.revertedWithCustomError(ctx.ledger, "WrongStatus");
+      await rfid(ctx, 1n);
+      await expect(ctx.ledger.connect(ctx.stranger).abortCollection(1n, ethers.ZeroHash)).to.be.revertedWithCustomError(
+        ctx.ledger,
+        "AccessControlUnauthorizedAccount",
+      );
+    });
+
+    it("anyone can expire an in-progress job after the timeout, but not before", async () => {
+      await toAssigned(ctx, 1n);
+      await rfid(ctx, 1n);
+      await time.increase(HOUR); // default timeout is 6 h
+      await expect(ctx.ledger.connect(ctx.stranger).expireCollection(1n)).to.be.revertedWithCustomError(ctx.ledger, "TimeoutNotReached");
+      await time.increase(6 * HOUR);
+      await expect(ctx.ledger.connect(ctx.stranger).expireCollection(1n))
+        .to.emit(ctx.ledger, "CollectionAborted")
+        .withArgs(1n, WORKER, ctx.stranger.address, true, ethers.ZeroHash);
+      expect(await ctx.ledger.reserved()).to.equal(0n);
+      expect((await ctx.ledger.getRequest(1n)).status).to.equal(S.Approved);
+    });
+
+    it("a no-show assignment can also be expired permissionlessly", async () => {
+      await toAssigned(ctx, 1n);
+      await time.increase(7 * HOUR);
+      await ctx.ledger.connect(ctx.stranger).expireCollection(1n);
+      expect(await ctx.ledger.reserved()).to.equal(0n);
+      expect((await ctx.ledger.getRequest(1n)).status).to.equal(S.Approved);
+    });
+
+    it("cannot expire a job that is not stalled (awaiting approval or paid)", async () => {
+      await toAssigned(ctx, 1n);
+      await rfid(ctx, 1n);
+      await complete(ctx, 1n);
+      await time.increase(30 * HOUR);
+      await expect(ctx.ledger.expireCollection(1n)).to.be.revertedWithCustomError(ctx.ledger, "WrongStatus");
+      await ctx.ledger.connect(ctx.officer).approveCompletion(1n, ethers.ZeroHash);
+      await ctx.ledger.connect(ctx.officer).releasePayment(1n);
+      await expect(ctx.ledger.expireCollection(1n)).to.be.revertedWithCustomError(ctx.ledger, "WrongStatus");
+    });
+
+    it("a worker who expired cannot be paid from the old escrow (funds stay conserved)", async () => {
+      const before = await ethers.provider.getBalance(ctx.workerWallet.address);
+      await toAssigned(ctx, 1n);
+      await rfid(ctx, 1n);
+      await time.increase(7 * HOUR);
+      await ctx.ledger.expireCollection(1n);
+      await expect(ctx.ledger.connect(ctx.officer).releasePayment(1n)).to.be.revertedWithCustomError(ctx.ledger, "WrongStatus");
+      expect(await ethers.provider.getBalance(ctx.workerWallet.address)).to.equal(before);
+      expect(await ctx.ledger.freeFunds()).to.equal(ethers.parseEther("1"));
+    });
+
+    it("the timeout is admin-tunable within sane bounds", async () => {
+      await expect(ctx.ledger.setCollectionTimeout(60)).to.be.revertedWithCustomError(ctx.ledger, "TimeoutOutOfRange");
+      await expect(ctx.ledger.connect(ctx.stranger).setCollectionTimeout(2 * HOUR)).to.be.revertedWithCustomError(
+        ctx.ledger,
+        "AccessControlUnauthorizedAccount",
+      );
+      await expect(ctx.ledger.setCollectionTimeout(2 * HOUR)).to.emit(ctx.ledger, "CollectionTimeoutUpdated").withArgs(2 * HOUR);
+      expect(await ctx.ledger.collectionTimeout()).to.equal(2 * HOUR);
+    });
+  });
 });

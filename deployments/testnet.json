@@ -1,0 +1,51 @@
+{
+  "network": "testnet",
+  "chainId": 91562037,
+  "address": "0xF1733f2164c98CDcB8C398dc4522F3369E180b56",
+  "deployBlock": 5797949,
+  "deployTx": "0x2a2a65ea77d434f2f28b43d387d023b6598e941302c0e2e0e73cc30eaa1c1a16",
+  "deployer": "0xE1D7F577912c5D39Df119559a57480331DC17bA5",
+  "deployedAt": "2026-09-29T02:31:50.953Z",
+  "setupTxs": [
+    {
+      "hash": "0x8b4d1823752ceb0aefb58a565c0f359c6f5624f50895a947ef618ca39a302a40",
+      "action": "ROLE_GRANT",
+      "method": "grantRole"
+    },
+    {
+      "hash": "0xae141b3e99e2d13a791e93000b0c3440a783869c54988441c74381158d3973d6",
+      "action": "ROLE_GRANT",
+      "method": "grantRole"
+    },
+    {
+      "hash": "0xf5fb960642fdbca26e4bd08bd9ba6269e898e1d6987bee80898e4abdb7ba7d99",
+      "action": "ROLE_GRANT",
+      "method": "grantRole"
+    },
+    {
+      "hash": "0x74d7405b1dd9860fb97c6c6611ac1a13c4c2386378ab0b657a9c351575bf4993",
+      "action": "BIN_REGISTRATION",
+      "method": "registerBins"
+    },
+    {
+      "hash": "0xb571f8750fa37ced391404ef8330db367cc5b8b908d1f9da389e93d284fdc568",
+      "action": "WORKER_REGISTRATION",
+      "method": "registerWorkers"
+    },
+    {
+      "hash": "0x8696ee26dccb9a86c9f43eb5d1d33612387951c79e94b6cfea67a6d9f17fcc3e",
+      "action": "FUND_TOPUP",
+      "method": "fund"
+    },
+    {
+      "hash": "0xba78e16fab6f1fe3252e1fb45a8bbf62ee35dba62e96a308fbf531f7dfe1b90d",
+      "action": "GAS_FUNDING",
+      "method": "transfer"
+    },
+    {
+      "hash": "0x8a4757c31a3d7e464b67915aafe589be78892608f629c80f8afc01a7e3c479de",
+      "action": "GAS_FUNDING",
+      "method": "transfer"
+    }
+  ]
+}

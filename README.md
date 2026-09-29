@@ -51,3 +51,7 @@ Open http://localhost:8080 (port busy? `set PORT=3000` on Windows, `PORT=3000` o
 - A random worker can't claim a job: the ledger only accepts an RFID proof signed by the bin for the assigned worker's card, and only pays the wallet registered for that worker.
 - A collection can't be completed from the UI: completion needs bin-signed before/after readings plus an AI verdict, and the contract refuses approval if less than the policy minimum was removed.
 - Transaction hashes are never faked; "confirmed" is shown only after a receipt.
+
+## Trust model (read this before the safeguards claim more than they should)
+
+Bin evidence is signed with per-bin keys **held by the backend**; the ESP32 authenticates with an HMAC secret. The contract still enforces hard rules the backend cannot bend (registered wallet only, pay once, physics check on signed levels, untouchable escrow, permissionless `expireCollection` for stalled jobs), but with the default deployment one server holds the gateway, verifier and officer keys. Full table of attacks, defenses and known gaps: [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md). Attack demo script: [docs/ATTACK_DEMO.md](docs/ATTACK_DEMO.md). Optional load-cell verification: `REQUIRE_WEIGHT` and `MIN_WEIGHT_REMOVED_G` in `.env.example`.

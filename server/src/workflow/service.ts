@@ -84,6 +84,7 @@ async function telemetryWindow(binId: string, fromIso: string | null, limit = 90
     lid: t.lid_state,
     servo: t.servo_state,
     ir: t.ir_count,
+    weightG: t.weight_g ?? null,
   }));
 }
 
@@ -1206,6 +1207,8 @@ async function finalizeCollection(binId: string) {
     assignedAt: assignment ? new Date(assignment.assigned_at).toISOString() : null,
     workerDistanceM: distanceM,
     minConfidence: config.ai.minConfidence,
+    requireWeight: config.verify.requireWeight && bin.source === "hardware",
+    minWeightRemovedG: config.verify.minWeightRemovedG,
   });
   const { row: ver, result, reportHash } = await runVerification(fusion, {
     requestId: req.id,

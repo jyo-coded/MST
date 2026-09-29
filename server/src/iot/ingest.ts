@@ -24,6 +24,7 @@ export type TelemetryPacket = {
   irCount?: number; // deposits seen since the previous packet
   rfidDetected?: boolean;
   temperature?: number;
+  weightG?: number; // load cell (HX711), grams, whole bin including tare
   rssi?: number;
   seq?: number;
   timestamp?: number | string; // unix seconds/ms or ISO, device clock
@@ -93,9 +94,9 @@ export async function ingest(p: TelemetryPacket, opts: { source: "hardware" | "s
   const ts = new Date().toISOString();
 
   await q(
-    `INSERT INTO telemetry (bin_id, ts, seq, distance_cm, distance2_cm, fill_pct, fill2_pct, lid_state, servo_state, ir_status, ir_count, rfid_detected, temperature_c, rssi, source)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
-    [p.binId, ts, p.seq ?? null, distance, distance2, fill, fill2, lid, servo, ir, p.irCount ?? 0, !!p.rfidDetected, p.temperature ?? null, p.rssi ?? null, opts.source],
+    `INSERT INTO telemetry (bin_id, ts, seq, distance_cm, distance2_cm, fill_pct, fill2_pct, lid_state, servo_state, ir_status, ir_count, rfid_detected, temperature_c, rssi, source, weight_g)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`,
+    [p.binId, ts, p.seq ?? null, distance, distance2, fill, fill2, lid, servo, ir, p.irCount ?? 0, !!p.rfidDetected, p.temperature ?? null, p.rssi ?? null, opts.source, Number.isFinite(p.weightG) ? p.weightG : null],
   );
   const prevLid = bin.lid_state as string;
   const wasOffline = !bin.online;

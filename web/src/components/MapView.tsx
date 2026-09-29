@@ -123,15 +123,14 @@ export function MapView({
     () => [...bins.map((b) => [b.lat, b.lng] as [number, number]), ...workers.map((w) => [w.lat, w.lng] as [number, number]), ...(track ?? [])],
     [bins, workers, track],
   );
-  const center: [number, number] = points[0] ?? [22.7196, 75.865];
+  const center: [number, number] = points[0] ?? [12.9716, 77.5946];
 
   return (
     <div className={className} style={{ height }}>
       <MapContainer center={center} zoom={13} zoomControl={zoomControl} scrollWheelZoom attributionControl className="h-full w-full rounded-[inherit]">
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
-          subdomains="abcd"
+          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           maxZoom={19}
         />
         <TileFallback />

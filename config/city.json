@@ -1,49 +1,368 @@
 {
   "municipality": {
     "id": "MUN-01",
-    "name": "Municipal Corporation",
-    "city": "Indore",
+    "name": "Bruhat Bengaluru Mahanagara Palike",
+    "city": "Bengaluru",
     "ward": "Central Zone",
-    "center": { "lat": 22.7196, "lng": 75.8650 }
+    "center": {
+      "lat": 12.9716,
+      "lng": 77.5946
+    }
   },
   "bins": [
-    { "id": "BIN-001", "name": "Rajwada Heritage Plaza", "address": "Rajwada Chowk, Old Palasia Rd", "zone": "Zone 1 · Rajwada", "lat": 22.71872, "lng": 75.85538, "capacityLitres": 240, "depthCm": 60, "hardware": true, "startFill": 34 },
-    { "id": "BIN-002", "name": "Sarafa Night Market", "address": "Sarafa Bazaar, near Kanch Mandir", "zone": "Zone 1 · Rajwada", "lat": 22.71762, "lng": 75.85602, "capacityLitres": 660, "depthCm": 110, "startFill": 71 },
-    { "id": "BIN-003", "name": "Malharganj Market", "address": "Malharganj Main Rd", "zone": "Zone 1 · Rajwada", "lat": 22.72655, "lng": 75.84451, "capacityLitres": 240, "depthCm": 60, "startFill": 42 },
-    { "id": "BIN-004", "name": "Regal Square", "address": "Regal Chauraha, MG Road", "zone": "Zone 2 · MG Road", "lat": 22.71891, "lng": 75.86862, "capacityLitres": 660, "depthCm": 110, "startFill": 58 },
-    { "id": "BIN-005", "name": "Railway Station East Gate", "address": "Indore Jn, Platform 1 approach", "zone": "Zone 2 · MG Road", "lat": 22.71788, "lng": 75.86802, "capacityLitres": 1100, "depthCm": 130, "startFill": 76 },
-    { "id": "BIN-006", "name": "Treasure Island Mall", "address": "MG Road, South Tukoganj", "zone": "Zone 2 · MG Road", "lat": 22.72104, "lng": 75.87896, "capacityLitres": 660, "depthCm": 110, "startFill": 23 },
-    { "id": "BIN-007", "name": "Geeta Bhawan Square", "address": "Geeta Bhawan Chauraha", "zone": "Zone 3 · Palasia", "lat": 22.71742, "lng": 75.88703, "capacityLitres": 240, "depthCm": 60, "startFill": 49 },
-    { "id": "BIN-008", "name": "Chhappan Dukan", "address": "56 Dukan, New Palasia", "zone": "Zone 3 · Palasia", "lat": 22.72371, "lng": 75.88442, "capacityLitres": 1100, "depthCm": 130, "startFill": 74 },
-    { "id": "BIN-009", "name": "Palasia Square", "address": "AB Road, Palasia", "zone": "Zone 3 · Palasia", "lat": 22.72442, "lng": 75.88391, "capacityLitres": 660, "depthCm": 110, "startFill": 37 },
-    { "id": "BIN-010", "name": "LIG Square", "address": "LIG Colony, AB Road", "zone": "Zone 4 · Vijay Nagar", "lat": 22.73281, "lng": 75.88712, "capacityLitres": 240, "depthCm": 60, "startFill": 18 },
-    { "id": "BIN-011", "name": "Vijay Nagar Square", "address": "Vijay Nagar Chauraha, AB Road", "zone": "Zone 4 · Vijay Nagar", "lat": 22.75331, "lng": 75.89372, "capacityLitres": 1100, "depthCm": 130, "startFill": 62 },
-    { "id": "BIN-012", "name": "Scheme 54 Park", "address": "Scheme No. 54, PU-4", "zone": "Zone 4 · Vijay Nagar", "lat": 22.75602, "lng": 75.89604, "capacityLitres": 240, "depthCm": 60, "startFill": 29 },
-    { "id": "BIN-013", "name": "Nanda Nagar Main Rd", "address": "Nanda Nagar, Road No. 13", "zone": "Zone 5 · Nanda Nagar", "lat": 22.74213, "lng": 75.87031, "capacityLitres": 240, "depthCm": 60, "startFill": 44 },
-    { "id": "BIN-014", "name": "Khajrana Ganesh Mandir", "address": "Khajrana Temple Rd", "zone": "Zone 5 · Nanda Nagar", "lat": 22.73822, "lng": 75.90671, "capacityLitres": 1100, "depthCm": 130, "startFill": 78 },
-    { "id": "BIN-015", "name": "Tilak Nagar Main Rd", "address": "Tilak Nagar, Sector B", "zone": "Zone 6 · Tilak Nagar", "lat": 22.71642, "lng": 75.89862, "capacityLitres": 240, "depthCm": 60, "startFill": 33 },
-    { "id": "BIN-016", "name": "Bengali Square", "address": "Bengali Chauraha, Ring Rd", "zone": "Zone 6 · Tilak Nagar", "lat": 22.71521, "lng": 75.90623, "capacityLitres": 660, "depthCm": 110, "startFill": 55 },
-    { "id": "BIN-017", "name": "Kanadia Road Market", "address": "Kanadia Rd, near Sai Mandir", "zone": "Zone 6 · Tilak Nagar", "lat": 22.70932, "lng": 75.90722, "capacityLitres": 240, "depthCm": 60, "startFill": 21 },
-    { "id": "BIN-018", "name": "Musakhedi Chauraha", "address": "Musakhedi Square", "zone": "Zone 7 · Bhawarkuan", "lat": 22.70021, "lng": 75.89692, "capacityLitres": 240, "depthCm": 60, "startFill": 47 },
-    { "id": "BIN-019", "name": "Navlakha Bus Stand", "address": "Navlakha Square, AB Road", "zone": "Zone 7 · Bhawarkuan", "lat": 22.69972, "lng": 75.87662, "capacityLitres": 1100, "depthCm": 130, "startFill": 52, "offline": true },
-    { "id": "BIN-020", "name": "Bhawarkuan Square", "address": "Bhawarkuan Chauraha", "zone": "Zone 7 · Bhawarkuan", "lat": 22.69271, "lng": 75.86742, "capacityLitres": 660, "depthCm": 110, "startFill": 64 },
-    { "id": "BIN-021", "name": "Sapna Sangeeta Rd", "address": "Sapna Sangeeta Main Rd", "zone": "Zone 8 · Annapurna", "lat": 22.70342, "lng": 75.87021, "capacityLitres": 240, "depthCm": 60, "startFill": 39 },
-    { "id": "BIN-022", "name": "Annapurna Mandir", "address": "Annapurna Temple, Annapurna Rd", "zone": "Zone 8 · Annapurna", "lat": 22.69582, "lng": 75.83751, "capacityLitres": 660, "depthCm": 110, "startFill": 27 },
-    { "id": "BIN-023", "name": "Sudama Nagar", "address": "Sudama Nagar, Sector D", "zone": "Zone 8 · Annapurna", "lat": 22.69882, "lng": 75.82903, "capacityLitres": 240, "depthCm": 60, "startFill": 61 },
-    { "id": "BIN-024", "name": "Rajendra Nagar", "address": "Rajendra Nagar Main Rd", "zone": "Zone 8 · Annapurna", "lat": 22.68261, "lng": 75.83731, "capacityLitres": 240, "depthCm": 60, "startFill": 15 }
+    {
+      "id": "BIN-001",
+      "name": "Russell Market",
+      "address": "Shivajinagar Main Rd, Bengaluru",
+      "zone": "Zone 1 · Shivajinagar",
+      "lat": 12.9857,
+      "lng": 77.6057,
+      "capacityLitres": 240,
+      "depthCm": 60,
+      "hardware": true,
+      "startFill": 34
+    },
+    {
+      "id": "BIN-002",
+      "name": "Commercial Street Junction",
+      "address": "Commercial St, Bengaluru",
+      "zone": "Zone 1 · Shivajinagar",
+      "lat": 12.9822,
+      "lng": 77.6083,
+      "capacityLitres": 660,
+      "depthCm": 110,
+      "startFill": 71
+    },
+    {
+      "id": "BIN-003",
+      "name": "Shivajinagar Bus Stand",
+      "address": "Bus Stand Rd, Bengaluru",
+      "zone": "Zone 1 · Shivajinagar",
+      "lat": 12.9847,
+      "lng": 77.601,
+      "capacityLitres": 240,
+      "depthCm": 60,
+      "startFill": 42
+    },
+    {
+      "id": "BIN-004",
+      "name": "MG Road Metro",
+      "address": "Mahatma Gandhi Rd, Bengaluru",
+      "zone": "Zone 2 · MG Road",
+      "lat": 12.9755,
+      "lng": 77.6068,
+      "capacityLitres": 660,
+      "depthCm": 110,
+      "startFill": 58
+    },
+    {
+      "id": "BIN-005",
+      "name": "Brigade Road Corner",
+      "address": "Brigade Rd, Bengaluru",
+      "zone": "Zone 2 · MG Road",
+      "lat": 12.9719,
+      "lng": 77.607,
+      "capacityLitres": 1100,
+      "depthCm": 130,
+      "startFill": 76
+    },
+    {
+      "id": "BIN-006",
+      "name": "Church Street",
+      "address": "Church St, Bengaluru",
+      "zone": "Zone 2 · MG Road",
+      "lat": 12.9748,
+      "lng": 77.6049,
+      "capacityLitres": 660,
+      "depthCm": 110,
+      "startFill": 23
+    },
+    {
+      "id": "BIN-007",
+      "name": "100 Feet Road",
+      "address": "HAL 2nd Stage, Bengaluru",
+      "zone": "Zone 3 · Indiranagar",
+      "lat": 12.9719,
+      "lng": 77.6412,
+      "capacityLitres": 240,
+      "depthCm": 60,
+      "startFill": 49
+    },
+    {
+      "id": "BIN-008",
+      "name": "CMH Road Market",
+      "address": "CMH Rd, Bengaluru",
+      "zone": "Zone 3 · Indiranagar",
+      "lat": 12.9784,
+      "lng": 77.6408,
+      "capacityLitres": 1100,
+      "depthCm": 130,
+      "startFill": 74
+    },
+    {
+      "id": "BIN-009",
+      "name": "Indiranagar Metro",
+      "address": "Old Madras Rd, Bengaluru",
+      "zone": "Zone 3 · Indiranagar",
+      "lat": 12.9783,
+      "lng": 77.6385,
+      "capacityLitres": 660,
+      "depthCm": 110,
+      "startFill": 37
+    },
+    {
+      "id": "BIN-010",
+      "name": "Forum Mall Junction",
+      "address": "Hosur Rd, Bengaluru",
+      "zone": "Zone 4 · Koramangala",
+      "lat": 12.9346,
+      "lng": 77.6112,
+      "capacityLitres": 240,
+      "depthCm": 60,
+      "startFill": 18
+    },
+    {
+      "id": "BIN-011",
+      "name": "Sony World Signal",
+      "address": "80 Feet Rd, Bengaluru",
+      "zone": "Zone 4 · Koramangala",
+      "lat": 12.9368,
+      "lng": 77.6268,
+      "capacityLitres": 1100,
+      "depthCm": 130,
+      "startFill": 62
+    },
+    {
+      "id": "BIN-012",
+      "name": "Koramangala 5th Block",
+      "address": "17th Main, Bengaluru",
+      "zone": "Zone 4 · Koramangala",
+      "lat": 12.9352,
+      "lng": 77.6196,
+      "capacityLitres": 240,
+      "depthCm": 60,
+      "startFill": 29
+    },
+    {
+      "id": "BIN-013",
+      "name": "Jayanagar 4th Block Complex",
+      "address": "11th Main Rd, Bengaluru",
+      "zone": "Zone 5 · Jayanagar",
+      "lat": 12.925,
+      "lng": 77.5838,
+      "capacityLitres": 240,
+      "depthCm": 60,
+      "startFill": 44
+    },
+    {
+      "id": "BIN-014",
+      "name": "South End Circle",
+      "address": "South End Rd, Bengaluru",
+      "zone": "Zone 5 · Jayanagar",
+      "lat": 12.9368,
+      "lng": 77.5802,
+      "capacityLitres": 1100,
+      "depthCm": 130,
+      "startFill": 78
+    },
+    {
+      "id": "BIN-015",
+      "name": "Jayanagar 9th Block",
+      "address": "36th Cross, Bengaluru",
+      "zone": "Zone 5 · Jayanagar",
+      "lat": 12.918,
+      "lng": 77.592,
+      "capacityLitres": 240,
+      "depthCm": 60,
+      "startFill": 33
+    },
+    {
+      "id": "BIN-016",
+      "name": "Malleshwaram 8th Cross",
+      "address": "Sampige Rd, Bengaluru",
+      "zone": "Zone 6 · Malleshwaram",
+      "lat": 13.0031,
+      "lng": 77.57,
+      "capacityLitres": 660,
+      "depthCm": 110,
+      "startFill": 55
+    },
+    {
+      "id": "BIN-017",
+      "name": "Mantri Square",
+      "address": "Sampige Rd, Bengaluru",
+      "zone": "Zone 6 · Malleshwaram",
+      "lat": 12.9915,
+      "lng": 77.571,
+      "capacityLitres": 240,
+      "depthCm": 60,
+      "startFill": 21
+    },
+    {
+      "id": "BIN-018",
+      "name": "Malleshwaram 18th Cross",
+      "address": "Margosa Rd, Bengaluru",
+      "zone": "Zone 6 · Malleshwaram",
+      "lat": 13.009,
+      "lng": 77.568,
+      "capacityLitres": 240,
+      "depthCm": 60,
+      "startFill": 47
+    },
+    {
+      "id": "BIN-019",
+      "name": "Rajajinagar 1st Block",
+      "address": "Dr Rajkumar Rd, Bengaluru",
+      "zone": "Zone 7 · Rajajinagar",
+      "lat": 12.991,
+      "lng": 77.554,
+      "capacityLitres": 1100,
+      "depthCm": 130,
+      "startFill": 52,
+      "offline": true
+    },
+    {
+      "id": "BIN-020",
+      "name": "Navrang Theatre",
+      "address": "Dr Rajkumar Rd, Bengaluru",
+      "zone": "Zone 7 · Rajajinagar",
+      "lat": 12.9975,
+      "lng": 77.5519,
+      "capacityLitres": 660,
+      "depthCm": 110,
+      "startFill": 64
+    },
+    {
+      "id": "BIN-021",
+      "name": "Orion Mall Gate",
+      "address": "Dr Rajkumar Rd, Bengaluru",
+      "zone": "Zone 7 · Rajajinagar",
+      "lat": 13.011,
+      "lng": 77.555,
+      "capacityLitres": 240,
+      "depthCm": 60,
+      "startFill": 39
+    },
+    {
+      "id": "BIN-022",
+      "name": "Gandhi Bazaar",
+      "address": "Gandhi Bazaar Main Rd, Bengaluru",
+      "zone": "Zone 8 · Basavanagudi",
+      "lat": 12.9453,
+      "lng": 77.572,
+      "capacityLitres": 660,
+      "depthCm": 110,
+      "startFill": 27
+    },
+    {
+      "id": "BIN-023",
+      "name": "Bull Temple Road",
+      "address": "Bull Temple Rd, Bengaluru",
+      "zone": "Zone 8 · Basavanagudi",
+      "lat": 12.9427,
+      "lng": 77.568,
+      "capacityLitres": 240,
+      "depthCm": 60,
+      "startFill": 61
+    },
+    {
+      "id": "BIN-024",
+      "name": "DVG Road",
+      "address": "DVG Rd, Bengaluru",
+      "zone": "Zone 8 · Basavanagudi",
+      "lat": 12.947,
+      "lng": 77.5746,
+      "capacityLitres": 240,
+      "depthCm": 60,
+      "startFill": 15
+    }
   ],
   "workers": [
-    { "id": "WRK-001", "name": "Ramesh Yadav", "phone": "+91 98260 11001", "zone": "Zone 1 · Rajwada", "rfidUid": "A1B2C3D4", "lat": 22.7231, "lng": 75.8612 },
-    { "id": "WRK-002", "name": "Sunita Bai", "phone": "+91 98260 11002", "zone": "Zone 2 · MG Road", "rfidUid": "B7E41A09", "lat": 22.7141, "lng": 75.8735 },
-    { "id": "WRK-003", "name": "Imran Khan", "phone": "+91 98260 11003", "zone": "Zone 3 · Palasia", "rfidUid": "C3D98F12", "lat": 22.7275, "lng": 75.8912 },
-    { "id": "WRK-004", "name": "Lakshmi Verma", "phone": "+91 98260 11004", "zone": "Zone 4 · Vijay Nagar", "rfidUid": "D05A6B77", "lat": 22.7482, "lng": 75.8851 },
-    { "id": "WRK-005", "name": "Deepak Malviya", "phone": "+91 98260 11005", "zone": "Zone 5 · Nanda Nagar", "rfidUid": "E91C2D48", "lat": 22.7355, "lng": 75.8768 },
-    { "id": "WRK-006", "name": "Farida Sheikh", "phone": "+91 98260 11006", "zone": "Zone 6 · Tilak Nagar", "rfidUid": "F2837AB1", "lat": 22.7112, "lng": 75.8998 },
-    { "id": "WRK-007", "name": "Arjun Chouhan", "phone": "+91 98260 11007", "zone": "Zone 7 · Bhawarkuan", "rfidUid": "0A4F9C3E", "lat": 22.6978, "lng": 75.8804 },
-    { "id": "WRK-008", "name": "Kavita Solanki", "phone": "+91 98260 11008", "zone": "Zone 8 · Annapurna", "rfidUid": "1B6E0D52", "lat": 22.6931, "lng": 75.8387 }
+    {
+      "id": "WRK-001",
+      "name": "Ramesh Yadav",
+      "phone": "+91 98450 11001",
+      "zone": "Zone 1 · Shivajinagar",
+      "rfidUid": "A1B2C3D4",
+      "lat": 12.9862,
+      "lng": 77.6053
+    },
+    {
+      "id": "WRK-002",
+      "name": "Sunita Bai",
+      "phone": "+91 98450 11002",
+      "zone": "Zone 2 · MG Road",
+      "rfidUid": "B7E41A09",
+      "lat": 12.9759,
+      "lng": 77.604
+    },
+    {
+      "id": "WRK-003",
+      "name": "Imran Khan",
+      "phone": "+91 98450 11003",
+      "zone": "Zone 3 · Indiranagar",
+      "rfidUid": "C3D98F12",
+      "lat": 12.9824,
+      "lng": 77.6378
+    },
+    {
+      "id": "WRK-004",
+      "name": "Lakshmi Verma",
+      "phone": "+91 98450 11004",
+      "zone": "Zone 4 · Koramangala",
+      "rfidUid": "D05A6B77",
+      "lat": 12.9408,
+      "lng": 77.6238
+    },
+    {
+      "id": "WRK-005",
+      "name": "Deepak Malviya",
+      "phone": "+91 98450 11005",
+      "zone": "Zone 5 · Jayanagar",
+      "rfidUid": "E91C2D48",
+      "lat": 12.9408,
+      "lng": 77.5772
+    },
+    {
+      "id": "WRK-006",
+      "name": "Farida Sheikh",
+      "phone": "+91 98450 11006",
+      "zone": "Zone 6 · Malleshwaram",
+      "rfidUid": "F2837AB1",
+      "lat": 12.9955,
+      "lng": 77.568
+    },
+    {
+      "id": "WRK-007",
+      "name": "Arjun Chouhan",
+      "phone": "+91 98450 11007",
+      "zone": "Zone 7 · Rajajinagar",
+      "rfidUid": "0A4F9C3E",
+      "lat": 13.0015,
+      "lng": 77.5489
+    },
+    {
+      "id": "WRK-008",
+      "name": "Kavita Solanki",
+      "phone": "+91 98450 11008",
+      "zone": "Zone 8 · Basavanagudi",
+      "rfidUid": "1B6E0D52",
+      "lat": 12.9467,
+      "lng": 77.565
+    }
   ],
   "users": [
-    { "id": "USR-OFFICER", "name": "Priya Sharma", "email": "officer@municipal.demo", "role": "officer" },
-    { "id": "USR-ADMIN", "name": "Operations Admin", "email": "admin@municipal.demo", "role": "admin" }
+    {
+      "id": "USR-OFFICER",
+      "name": "Priya Sharma",
+      "email": "officer@municipal.demo",
+      "role": "officer"
+    },
+    {
+      "id": "USR-ADMIN",
+      "name": "Operations Admin",
+      "email": "admin@municipal.demo",
+      "role": "admin"
+    }
   ]
 }

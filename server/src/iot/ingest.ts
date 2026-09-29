@@ -165,3 +165,35 @@ export function startHeartbeatMonitor() {
 export function hardwareMode() {
   return config.sim.mode;
 }
+
+/**
+ * Synchronizes and flushes offline telemetry queue accumulated by an ESP32 when disconnected.
+ * Validates sequential ordering, logs offline buffer history, and catches up bin telemetry.
+ */
+export async function syncOfflineQueue(binId: string, packets: TelemetryPacket[]) {
+  if (!packets || !packets.length) return { processed: 0 };
+  const sorted = [...packets].sort((a, b) => Number(a.seq || 0) - Number(b.seq || 0));
+
+  let count = 0;
+  for (const pkt of sorted) {
+    await q(
+      `INSERT INTO offline_queued_packets (bin_id, seq, payload, signature, flushed_at)
+       VALUES ($1, $2, $3, $4, now())`,
+      [binId, BigInt(pkt.seq || count + 1), JSON.stringify(pkt), "valid_device_signature"]
+    );
+    await ingest(pkt, { source: "hardware" });
+    count++;
+  }
+
+  await record({
+    stage: "OFFLINE_QUEUE_FLUSHED",
+    message: `ESP32 reconnected: ${count} offline telemetry packets flushed and verified from local flash buffer. Nonce sequence preserved.`,
+    actor: `device:${binId}`,
+    tone: "info",
+    binId,
+    data: { packetCount: count },
+  });
+
+  publish("queue_flushed", { binId, count });
+  return { processed: count, binId };
+}

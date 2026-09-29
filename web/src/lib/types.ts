@@ -75,6 +75,10 @@ export type Worker = {
   locationUpdatedAt: string | null;
   completed: number;
   rejected: number;
+  reputationScore?: number;
+  slashedCount?: number;
+  stakeLockedMstc?: string | null;
+  requiredStakeMstc?: string;
   onChain: boolean;
   activeJob: { requestId: number; code: string; binId: string; status: string } | null;
   pendingPayments: number;
@@ -114,6 +118,12 @@ export type Request = {
   paymentStatus: PaymentStatus | null;
   paymentStatusLabel: string | null;
   scenario: string | null;
+  transferVerified?: boolean;
+  transferVerifiedAt?: string | null;
+  transferFacility?: string | null;
+  challengeStatus?: string;
+  challengeWindowEndsAt?: string | null;
+  secondFactorVerified?: boolean;
   createdAt: string;
   updatedAt: string;
   completedAt: string | null;
@@ -260,6 +270,76 @@ export type Tx = {
 
 export type Telemetry = { ts: string; fill: number; fill2: number | null; lid: string; servo: string; ir: number; distance?: number | null; source?: string };
 
+export type CitizenChallenge = {
+  id: number;
+  requestId: number;
+  binId: string;
+  citizenAddress: string;
+  citizenName: string | null;
+  lat: number;
+  lng: number;
+  distanceToBinM: number | null;
+  note: string;
+  photoUrl: string | null;
+  bountyMstc: number;
+  status: "PENDING" | "UPHELD" | "REJECTED";
+  watcherVerified: boolean;
+  createdAt: string;
+  resolvedAt: string | null;
+};
+
+export type WitnessAttestation = {
+  id: number;
+  requestId: number;
+  binId: string;
+  witnessName: string;
+  witnessAddress: string;
+  role: string;
+  statement: string;
+  signature: string;
+  evidenceHash: string;
+  createdAt: string;
+};
+
+export type IncidentReceipt = {
+  id: number;
+  incidentId: number;
+  kind: string;
+  binId: string;
+  requestId: number | null;
+  temperatureC: number;
+  detailsHash: string;
+  txHash: string | null;
+  blockNumber: number | null;
+  insurancePolicy: string;
+  claimStatus: string;
+  rawBundle: any;
+  createdAt: string;
+};
+
+export type ForecastData = {
+  binId: string;
+  currentFill: number;
+  hourlyFillRatePct: number;
+  predicted1h: number;
+  predicted3h: number;
+  predicted6h: number;
+  predicted12h: number;
+  predicted24h: number;
+  hoursUntilFull: number;
+  estimatedFullAt: string | null;
+  metrics: {
+    model: string;
+    mapePercent: number;
+    maePercent: number;
+    rmsePercent: number;
+    accuracyPercent: number;
+    samplesEvaluated: number;
+    measuredOnLocalData: boolean;
+  };
+  curve: { time: string; actual: number | null; predicted: number }[];
+};
+
 export type RequestDetail = {
   request: Request;
   bin: Bin;
@@ -273,6 +353,11 @@ export type RequestDetail = {
   telemetry: Telemetry[];
   payment: Payment | null;
   transactions: Tx[];
+  challenges?: CitizenChallenge[];
+  witnesses?: WitnessAttestation[];
+  incidentReceipts?: IncidentReceipt[];
+  transferStation?: { id: string; name: string; lat: number; lng: number; geofenceRadiusM?: number };
+  challengeWindowRemainingSec?: number;
 };
 
 export type Candidate = {

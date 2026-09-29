@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { Landmark, Send, Wallet } from "lucide-react";
+import { ArrowRight, Bot, CheckCircle2, Landmark, Radio, Send, Sparkles, Wallet, Zap } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -181,6 +181,7 @@ export function Payments() {
 
         <div className="min-w-0 space-y-6">
           <FundPanel fund={data?.fund ?? null} onTx={setTx} />
+          <RobotLoopPanel onTx={setTx} />
           <Panel title="How a payment moves">
             <ol className="space-y-3 text-[13px]">
               {[
@@ -289,6 +290,107 @@ function FundPanel({ fund, onTx }: { fund: { balanceMstc: string; reservedMstc: 
           </div>
         </>
       )}
+    </Panel>
+  );
+}
+
+function RobotLoopPanel({ onTx }: { onTx: (h: string) => void }) {
+  const qc = useQueryClient();
+  const toast = useLive((s) => s.toast);
+  const [running, setRunning] = useState(false);
+  const [lastLoop, setLastLoop] = useState<any>(null);
+
+  const executeLoop = async () => {
+    setRunning(true);
+    try {
+      const res = await post<{ success: boolean; loop: any }>("/m2m/robot-loop", {});
+      setLastLoop(res.loop);
+      toast({
+        tone: "success",
+        title: "Autonomous Robot M2M Loop Executed",
+        body: "4-wallet value loop completed: 0.05 MSTC distributed among Rover, Beacon & Solar Dock.",
+      });
+      qc.invalidateQueries({ queryKey: ["payments"] });
+      if (res.loop?.transactions?.[0]?.hash) {
+        onTx(res.loop.transactions[0].hash);
+      }
+    } catch (err) {
+      toast({ tone: "danger", title: "M2M Loop Failed", body: (err as Error).message });
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  return (
+    <Panel
+      title="Self-funding robot loop"
+      subtitle="4-wallet autonomous machine-to-machine value flow"
+      actions={
+        <Pill tone="progress" icon={<Bot className="h-3 w-3" />}>
+          M2M Web3
+        </Pill>
+      }
+    >
+      <div className="space-y-3.5 text-[12.5px]">
+        <p className="text-ink-2">
+          The collection rover receives payout, compensates the witness beacon per attestation, and pays the solar charging dock for kilowatt-hours.
+        </p>
+
+        <div className="rounded-lg border border-line bg-page p-3 space-y-2.5">
+          <div className="flex items-center justify-between font-mono text-[11px] text-ink-3">
+            <span>MUNICIPAL POOL</span>
+            <span className="text-ink font-semibold">0.050 MSTC</span>
+          </div>
+          <div className="flex items-center justify-center text-ink-3">
+            <ArrowRight className="h-3.5 w-3.5 rotate-90" />
+          </div>
+          <div className="rounded border border-line bg-surface p-2 text-center">
+            <div className="flex items-center justify-center gap-1.5 font-medium text-ink">
+              <Bot className="h-4 w-4 text-prog" /> Autonomous Rover Wallet
+            </div>
+            <div className="text-[11px] text-ink-3 font-mono mt-0.5">
+              Net retained: +0.025 MSTC
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2 text-center pt-1">
+            <div className="rounded border border-line bg-surface p-2">
+              <div className="flex items-center justify-center gap-1 text-[11.5px] font-medium text-ink">
+                <Radio className="h-3.5 w-3.5 text-warn" /> Witness Beacon
+              </div>
+              <div className="text-[11px] font-mono text-ink-3 mt-0.5">-0.010 MSTC</div>
+            </div>
+            <div className="rounded border border-line bg-surface p-2">
+              <div className="flex items-center justify-center gap-1 text-[11.5px] font-medium text-ink">
+                <Zap className="h-3.5 w-3.5 text-good" /> Solar Dock
+              </div>
+              <div className="text-[11px] font-mono text-ink-3 mt-0.5">-0.015 MSTC</div>
+            </div>
+          </div>
+        </div>
+
+        {lastLoop && (
+          <div className="rounded-md bg-good-bg border border-good-line p-2.5 text-[12px] text-good flex items-start gap-2">
+            <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" />
+            <div>
+              <div className="font-semibold">Settled across 4 wallets</div>
+              <div className="text-[11px] opacity-90">
+                {lastLoop.transactions?.length ?? 3} transactions confirmed on-chain
+              </div>
+            </div>
+          </div>
+        )}
+
+        <Button
+          size="sm"
+          variant="primary"
+          className="w-full"
+          loading={running}
+          icon={<Sparkles className="h-4 w-4" />}
+          onClick={executeLoop}
+        >
+          Execute Autonomous M2M Loop
+        </Button>
+      </div>
     </Panel>
   );
 }

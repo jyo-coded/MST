@@ -1,8 +1,8 @@
 import clsx from "clsx";
 import { motion } from "framer-motion";
-import { ArrowRight, Blocks, Building2, Cpu, Radio, Truck } from "lucide-react";
+import { ArrowRight, Award, Blocks, Building2, Cpu, Radio, Search, ShieldAlert, Truck } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Logo } from "../components/Shell";
 import { Button, Dot, Field, inputClass, Segmented } from "../components/ui";
 import { api, post } from "../lib/api";
@@ -166,6 +166,35 @@ export function Landing() {
           <p className="mt-4 text-center text-[12px] text-ink-3">
             Demo access: {role === "municipality" ? "officer@municipal.demo · demo1234" : "any worker · PIN 1234"}
           </p>
+
+          <div className="mt-6 border-t border-line pt-4 space-y-2.5">
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-ink-3 text-center">
+              Evaluator & Citizen Direct Access
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <Link
+                to="/audit"
+                className="flex flex-col items-center justify-center p-2 rounded-md border border-line bg-page hover:bg-hover text-center text-[11.5px] font-medium text-ink transition-colors shadow-panel"
+              >
+                <Search className="h-4 w-4 mb-1 text-prog" />
+                <span>Public Audit</span>
+              </Link>
+              <Link
+                to="/arena"
+                className="flex flex-col items-center justify-center p-2 rounded-md border border-line bg-page hover:bg-hover text-center text-[11.5px] font-medium text-ink transition-colors shadow-panel"
+              >
+                <ShieldAlert className="h-4 w-4 mb-1 text-bad" />
+                <span>Attack Arena</span>
+              </Link>
+              <Link
+                to="/witness"
+                className="flex flex-col items-center justify-center p-2 rounded-md border border-line bg-page hover:bg-hover text-center text-[11.5px] font-medium text-ink transition-colors shadow-panel"
+              >
+                <Award className="h-4 w-4 mb-1 text-good" />
+                <span>Judge Witness</span>
+              </Link>
+            </div>
+          </div>
         </motion.form>
       </section>
     </div>

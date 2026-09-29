@@ -10,6 +10,7 @@ import { bindLedger, seed } from "./db/seed";
 import { startHeartbeatMonitor } from "./iot/ingest";
 import { initSimulation, simSettings } from "./sim/engine";
 import { reconcile } from "./workflow/service";
+import { watcher } from "./workflow/watcher";
 
 async function main() {
   const db = await initDb();
@@ -29,6 +30,7 @@ async function main() {
 
   await initSimulation();
   startHeartbeatMonitor();
+  watcher.start();
   setInterval(() => reconcile().catch(() => undefined), 20_000);
 
   const app = express();

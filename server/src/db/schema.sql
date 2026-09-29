@@ -297,3 +297,82 @@ CREATE TABLE IF NOT EXISTS settings (
 
 -- Optional load-cell reading (grams, whole bin). Idempotent for existing databases.
 ALTER TABLE telemetry ADD COLUMN IF NOT EXISTS weight_g DOUBLE PRECISION;
+
+-- New columns for collection_requests (chain of custody, citizen challenge, 2FA)
+ALTER TABLE collection_requests ADD COLUMN IF NOT EXISTS transfer_verified BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE collection_requests ADD COLUMN IF NOT EXISTS transfer_verified_at TIMESTAMPTZ;
+ALTER TABLE collection_requests ADD COLUMN IF NOT EXISTS transfer_facility TEXT;
+ALTER TABLE collection_requests ADD COLUMN IF NOT EXISTS challenge_window_ends_at TIMESTAMPTZ;
+ALTER TABLE collection_requests ADD COLUMN IF NOT EXISTS challenge_status TEXT NOT NULL DEFAULT 'OPEN';
+ALTER TABLE collection_requests ADD COLUMN IF NOT EXISTS second_factor_verified BOOLEAN NOT NULL DEFAULT false;
+
+-- Worker Stake and Reputation
+ALTER TABLE workers ADD COLUMN IF NOT EXISTS stake_locked_wei NUMERIC(78, 0) DEFAULT 0;
+ALTER TABLE workers ADD COLUMN IF NOT EXISTS reputation_score INT NOT NULL DEFAULT 100;
+ALTER TABLE workers ADD COLUMN IF NOT EXISTS slashed_count INT NOT NULL DEFAULT 0;
+
+-- Citizen Challenges
+CREATE TABLE IF NOT EXISTS citizen_challenges (
+  id                  SERIAL PRIMARY KEY,
+  request_id          INT NOT NULL REFERENCES collection_requests(id),
+  bin_id              TEXT NOT NULL REFERENCES bins(id),
+  citizen_address     TEXT NOT NULL,
+  citizen_name        TEXT,
+  lat                 DOUBLE PRECISION NOT NULL,
+  lng                 DOUBLE PRECISION NOT NULL,
+  distance_to_bin_m   DOUBLE PRECISION,
+  note                TEXT NOT NULL,
+  photo_url           TEXT,
+  bounty_mstc         DOUBLE PRECISION NOT NULL DEFAULT 0.02,
+  status              TEXT NOT NULL DEFAULT 'PENDING',
+  watcher_verified    BOOLEAN NOT NULL DEFAULT false,
+  tx_id               INT REFERENCES blockchain_transactions(id),
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+  resolved_at         TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS challenges_req ON citizen_challenges (request_id);
+
+-- Witness Attestations (Judge as Witness)
+CREATE TABLE IF NOT EXISTS witness_attestations (
+  id               SERIAL PRIMARY KEY,
+  request_id       INT NOT NULL REFERENCES collection_requests(id),
+  bin_id           TEXT NOT NULL REFERENCES bins(id),
+  witness_name     TEXT NOT NULL,
+  witness_address  TEXT NOT NULL,
+  role             TEXT NOT NULL DEFAULT 'Judge / Evaluator',
+  statement        TEXT NOT NULL,
+  signature        TEXT NOT NULL,
+  evidence_hash    TEXT NOT NULL,
+  tx_id            INT REFERENCES blockchain_transactions(id),
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS witness_req ON witness_attestations (request_id);
+
+-- Tamper-Proof Insurance Incident Receipts
+CREATE TABLE IF NOT EXISTS incident_receipts (
+  id               SERIAL PRIMARY KEY,
+  incident_id      INT,
+  kind             TEXT NOT NULL,
+  bin_id           TEXT NOT NULL REFERENCES bins(id),
+  request_id       INT,
+  temperature_c    DOUBLE PRECISION,
+  details_hash     TEXT NOT NULL,
+  tx_hash          TEXT,
+  block_number     BIGINT,
+  insurance_policy TEXT NOT NULL DEFAULT 'POL-ASTRA-MUNICIPAL-2026',
+  claim_status     TEXT NOT NULL DEFAULT 'COMMITTED_ON_CHAIN',
+  raw_bundle       JSONB NOT NULL,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Offline Queued Telemetry Packets
+CREATE TABLE IF NOT EXISTS offline_queued_packets (
+  id               SERIAL PRIMARY KEY,
+  bin_id           TEXT NOT NULL REFERENCES bins(id),
+  seq              BIGINT NOT NULL,
+  payload          JSONB NOT NULL,
+  signature        TEXT NOT NULL,
+  queued_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+  flushed_at       TIMESTAMPTZ
+);
+

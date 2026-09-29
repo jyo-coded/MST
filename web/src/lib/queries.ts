@@ -53,3 +53,27 @@ export const useMeJob = () => useQuery({ queryKey: ["me-job"], queryFn: () => ap
 /** Active collections = requests between assignment and final approval. */
 export const useActive = () =>
   useQuery({ queryKey: ["active"], queryFn: () => api<Request[]>("/requests?group=active"), enabled: authed() });
+
+export const useForecast = (binId?: string) =>
+  useQuery({ queryKey: ["forecast", binId], queryFn: () => api<any>(`/bins/${binId}/forecast`), enabled: !!binId });
+
+export const useChallenges = () =>
+  useQuery({ queryKey: ["challenges"], queryFn: () => api<any[]>("/challenges"), refetchInterval: 5000 });
+
+export const useWatcherStatus = () =>
+  useQuery({ queryKey: ["watcher-status"], queryFn: () => api<any>("/watcher/status"), refetchInterval: 4000 });
+
+export const useAuditBundle = (hashOrId?: string) =>
+  useQuery({
+    queryKey: ["audit-bundle", hashOrId],
+    queryFn: () => api<any>(`/audit/bundle/${hashOrId}`),
+    enabled: !!hashOrId,
+    retry: false,
+  });
+
+export const useAuditSamples = () =>
+  useQuery({ queryKey: ["audit-samples"], queryFn: () => api<any[]>("/audit/samples") });
+
+export const useTransferStationConfig = () =>
+  useQuery({ queryKey: ["transfer-station-config"], queryFn: () => api<any>("/transfer-station/config") });
+

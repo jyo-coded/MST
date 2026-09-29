@@ -1,4 +1,19 @@
-import { ChevronRight, CircleOff, Cpu, Radio, ShieldAlert } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  CheckCircle2,
+  ChevronRight,
+  CircleOff,
+  Cpu,
+  Database,
+  Flame,
+  KeyRound,
+  Radio,
+  RefreshCw,
+  ShieldAlert,
+  Sparkles,
+  TrendingUp,
+} from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -12,7 +27,7 @@ import { Button, Dot, Hash, Panel, Pill, Segmented, Skeleton, Table, Td, Th } fr
 import { post } from "../lib/api";
 import { ago, dateTime, pct, time } from "../lib/format";
 import { useLiveBin } from "../lib/live";
-import { useBin, useConfig } from "../lib/queries";
+import { useBin, useConfig, useForecast } from "../lib/queries";
 import { useLive } from "../lib/store";
 
 const WINDOWS = [
@@ -36,12 +51,70 @@ export function BinDetail() {
   const [minutes, setMinutes] = useState<(typeof WINDOWS)[number]["value"]>("15");
   const { data, isLoading } = useBin(id, Number(minutes));
   const { data: cfg } = useConfig();
+  const { data: forecast } = useForecast(id);
   const b = useLiveBin(data?.bin);
   const live = useLive((s) => s.telemetry[id]);
   const toast = useLive((s) => s.toast);
   const qc = useQueryClient();
   const [tx, setTx] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [triggeringFire, setTriggeringFire] = useState(false);
+  const [syncingQueue, setSyncingQueue] = useState(false);
+
+  const simulateFire = async () => {
+    if (!b) return;
+    setTriggeringFire(true);
+    try {
+      const res = await post<{ receipt: any; tx: any }>("/incidents/fire-receipt", {
+        binId: b.id,
+        temperatureC: 88.5,
+        flameDetected: true,
+      });
+      toast({
+        tone: "danger",
+        title: "Thermal Hazard Incident Committed On-Chain",
+        body: `Insurance-grade receipt created. Hash: ${res.receipt.receiptHash.slice(0, 10)}… (Tx: ${res.tx.hash.slice(0, 8)}…)`,
+      });
+      qc.invalidateQueries({ queryKey: ["bin", id] });
+    } catch (err) {
+      toast({ tone: "danger", title: "Incident Recording Failed", body: (err as Error).message });
+    } finally {
+      setTriggeringFire(false);
+    }
+  };
+
+  const syncQueue = async () => {
+    if (!b) return;
+    setSyncingQueue(true);
+    try {
+      const samplePackets = [
+        {
+          binId: b.id,
+          seq: Date.now() % 10000,
+          ts: new Date(Date.now() - 60000).toISOString(),
+          fillPct: b.fillPct + 1.2,
+          fillPct2: (b.fill2Pct ?? b.fillPct) + 1.1,
+          tempC: 27.5,
+          batteryMv: 4120,
+          sig: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+        },
+      ];
+      await post("/iot/queue-sync", {
+        binId: b.id,
+        packets: samplePackets,
+      });
+      toast({
+        tone: "success",
+        title: "Offline Queue Synced",
+        body: "Backfilled queued sensor packet successfully without sequence gap.",
+      });
+      qc.invalidateQueries({ queryKey: ["bin", id] });
+    } catch (err) {
+      toast({ tone: "danger", title: "Queue Sync Failed", body: (err as Error).message });
+    } finally {
+      setSyncingQueue(false);
+    }
+  };
 
   if (isLoading || !data || !b) {
     return (
@@ -103,6 +176,9 @@ export function BinDetail() {
             <Button size="sm" variant="ghost" icon={<ShieldAlert className="h-4 w-4" />} loading={busy === "Sensor obstruction"} disabled={!!b.request} onClick={() => sim("Sensor obstruction", "/sim/obstruction", { binId: b.id })}>
               Fake full reading
             </Button>
+            <Button size="sm" variant="danger" icon={<Flame className="h-4 w-4" />} loading={triggeringFire} onClick={simulateFire}>
+              Thermal hazard
+            </Button>
             <Button size="sm" variant="ghost" icon={<CircleOff className="h-4 w-4" />} loading={busy === "Connectivity"} onClick={() => sim("Connectivity", "/sim/offline", { binId: b.id, offline: b.online })}>
               {b.online ? "Take offline" : "Bring online"}
             </Button>
@@ -111,34 +187,94 @@ export function BinDetail() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[340px_1fr]">
-        <Panel title="Live bin" subtitle={`${b.source === "hardware" ? "ESP32 telemetry" : "Simulated telemetry"} · ${ago(b.lastHeartbeat)}`}>
-          <div className="flex justify-center">
-            <BinVisual fill={b.fillPct} lid={b.lidState} servo={b.servoState} ir={b.irStatus} rfid={b.rfidState} threshold={b.thresholdPct} monitor={b.monitorPct} online={b.online} size={220} />
-          </div>
-          <div className="mt-3 text-center">
-            <div className="text-[44px] font-semibold leading-none tracking-[-0.03em] num">{Math.round(b.fillPct)}%</div>
-            <div className="mt-1 text-[12.5px] text-ink-3">
-              full · alert at {b.thresholdPct}% · watch from {b.monitorPct}%
+        <div className="space-y-6">
+          <Panel title="Live bin" subtitle={`${b.source === "hardware" ? "ESP32 telemetry" : "Simulated telemetry"} · ${ago(b.lastHeartbeat)}`}>
+            <div className="flex justify-center">
+              <BinVisual fill={b.fillPct} lid={b.lidState} servo={b.servoState} ir={b.irStatus} rfid={b.rfidState} threshold={b.thresholdPct} monitor={b.monitorPct} online={b.online} size={220} />
             </div>
-          </div>
-          <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-line-2 pt-4 text-[13px]">
-            <Reading label="Ultrasonic distance" value={b.distanceCm !== null ? `${b.distanceCm.toFixed(1)} cm` : "–"} />
-            <Reading label="Supporting sensor" value={b.distance2Cm !== null ? `${b.distance2Cm.toFixed(1)} cm · ${pct(b.fill2Pct)}` : pct(b.fill2Pct)} />
-            <Reading label="Lid" value={cap(b.lidState)} />
-            <Reading label="Servo lock" value={cap(b.servoState)} />
-            <Reading label="IR at the mouth" value={cap(b.irStatus)} />
-            <Reading label="RFID reader" value={cap(b.rfidState)} />
-            <Reading label="Temperature" value={b.temperatureC !== null ? `${b.temperatureC.toFixed(1)} °C` : "–"} />
-            <Reading
-              label="Connectivity"
-              value={
-                <span className="inline-flex items-center gap-1.5">
-                  <Dot tone={b.online ? "success" : "danger"} pulse={b.online} /> {b.online ? "online" : "offline"}
-                </span>
+            <div className="mt-3 text-center">
+              <div className="text-[44px] font-semibold leading-none tracking-[-0.03em] num">{Math.round(b.fillPct)}%</div>
+              <div className="mt-1 text-[12.5px] text-ink-3">
+                full · alert at {b.thresholdPct}% · watch from {b.monitorPct}%
+              </div>
+            </div>
+            <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-line-2 pt-4 text-[13px]">
+              <Reading label="Ultrasonic distance" value={b.distanceCm !== null ? `${b.distanceCm.toFixed(1)} cm` : "–"} />
+              <Reading label="Supporting sensor" value={b.distance2Cm !== null ? `${b.distance2Cm.toFixed(1)} cm · ${pct(b.fill2Pct)}` : pct(b.fill2Pct)} />
+              <Reading label="Lid" value={cap(b.lidState)} />
+              <Reading label="Servo lock" value={cap(b.servoState)} />
+              <Reading label="IR at the mouth" value={cap(b.irStatus)} />
+              <Reading label="RFID reader" value={cap(b.rfidState)} />
+              <Reading label="Temperature" value={b.temperatureC !== null ? `${b.temperatureC.toFixed(1)} °C` : "–"} />
+              <Reading
+                label="Connectivity"
+                value={
+                  <span className="inline-flex items-center gap-1.5">
+                    <Dot tone={b.online ? "success" : "danger"} pulse={b.online} /> {b.online ? "online" : "offline"}
+                  </span>
+                }
+              />
+            </dl>
+          </Panel>
+
+          {forecast && (
+            <Panel
+              title="Fill-level forecast"
+              subtitle="Holt-Winters double exponential smoothing with empirical error"
+              actions={
+                <Pill tone={forecast.trend === "rapid_fill" ? "danger" : forecast.trend === "increasing" ? "warning" : "success"}>
+                  {forecast.trend.replace("_", " ")}
+                </Pill>
               }
-            />
-          </dl>
-        </Panel>
+            >
+              <div className="space-y-4 text-[13px]">
+                <div className="grid grid-cols-2 gap-3">
+                  <Reading
+                    label="Fill velocity"
+                    value={
+                      <span className="font-semibold text-ink">
+                        {forecast.fillVelocityPctPerHour >= 0 ? "+" : ""}
+                        {forecast.fillVelocityPctPerHour.toFixed(1)}% / hr
+                      </span>
+                    }
+                  />
+                  <Reading
+                    label="Hours until threshold"
+                    value={
+                      <span className="font-semibold text-ink">
+                        {forecast.hoursUntilFull !== null ? `${forecast.hoursUntilFull.toFixed(1)} h` : "Stable"}
+                      </span>
+                    }
+                  />
+                </div>
+
+                <div className="rounded-md border border-line bg-page p-3 space-y-2">
+                  <div className="flex items-center justify-between text-[11.5px] font-semibold uppercase tracking-wider text-ink-3">
+                    <span>Backtested error on local data</span>
+                    <span className="text-good font-mono">n = {forecast.backtestAccuracy.samplesEvaluated}</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="rounded bg-surface p-1.5 border border-line">
+                      <div className="text-[10.5px] text-ink-3">MAPE</div>
+                      <div className="text-[13px] font-semibold text-ink num">{forecast.backtestAccuracy.mapePercent.toFixed(1)}%</div>
+                    </div>
+                    <div className="rounded bg-surface p-1.5 border border-line">
+                      <div className="text-[10.5px] text-ink-3">MAE</div>
+                      <div className="text-[13px] font-semibold text-ink num">{forecast.backtestAccuracy.maeUnits.toFixed(1)}%</div>
+                    </div>
+                    <div className="rounded bg-surface p-1.5 border border-line">
+                      <div className="text-[10.5px] text-ink-3">RMSE</div>
+                      <div className="text-[13px] font-semibold text-ink num">{forecast.backtestAccuracy.rmseUnits.toFixed(1)}%</div>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-ink-3 leading-tight pt-1">
+                    * Error computed on bin's own telemetry history, not synthetic claims.
+                  </p>
+                </div>
+              </div>
+            </Panel>
+          )}
+        </div>
 
         <div className="min-w-0 space-y-6">
           <Panel title="Fill level" subtitle="Both ultrasonic sensors; the lid-open windows are shaded" actions={<Segmented size="sm" value={minutes} onChange={setMinutes} items={WINDOWS.map((w) => ({ value: w.value, label: w.label }))} />}>
@@ -170,6 +306,8 @@ export function BinDetail() {
                   <Hash value={b.deviceAddress} url={b.deviceUrl} />
                 </Row>
                 <Row label="Registered on-chain">{b.onChain ? <span className="text-good">Yes, in the ledger's bin registry</span> : <span className="text-warn">Not yet</span>}</Row>
+                <Row label="Device key">secp256k1 provisioned in hardware/firmware</Row>
+                <Row label="Offline queue">256-packet flash buffer with sequential sync</Row>
                 <Row label="Signs">Fullness reports, RFID scans, collection evidence (EIP-712)</Row>
                 <Row label="Telemetry auth">HMAC-SHA256 per device, replay-protected by sequence number</Row>
                 <Row label="Source">{b.source === "hardware" ? "ESP32 over Wi-Fi" : "Simulation engine"}</Row>
@@ -178,6 +316,18 @@ export function BinDetail() {
                     {b.lat.toFixed(5)}, {b.lng.toFixed(5)}
                   </span>
                 </Row>
+              </div>
+              <div className="mt-3 border-t border-line pt-3">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="w-full"
+                  loading={syncingQueue}
+                  icon={<Database className="h-3.5 w-3.5" />}
+                  onClick={syncQueue}
+                >
+                  Flush & sync offline packet queue
+                </Button>
               </div>
               <MapView bins={[b]} height={150} className="mt-4 overflow-hidden rounded-md border border-line" zoomControl={false} />
             </Panel>

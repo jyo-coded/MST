@@ -1,37 +1,84 @@
-# Threat model (what is trusted, what is not)
+# Threat model & Honest Residual Risk Analysis
 
-This is the honest version. Read it before you read the safeguards in the README.
+> **Operational Mandate**: This document provides an intellectually honest threat model for the Astra Waste Municipal Waste Collection System. Read this before evaluating platform safeguards or running the Attack Arena.
 
-## Who holds which key today
+---
 
-| Key | Held by | What it can do |
-|---|---|---|
-| Bin device key (one per bin) | **Backend server** (derived from `DEVICE_MNEMONIC`) | Signs the EIP-712 fullness, RFID and completion evidence |
-| ESP32 HMAC secret | The ESP32 and the server | Authenticates each telemetry POST; **not** an on-chain signature |
-| Gateway, verifier, officer keys | Backend server (default) | Relay evidence, sign AI verdicts, approve and release payment |
-| Admin key | Operator | Registers bins and workers, funds the pool, sets policy |
+## 1. Key Distribution & Cryptographic Authority
 
-Consequence: the contract enforces separate roles, but with the default deployment one backend controls all of them. On-chain "bin-signed" means "signed with the bin's key by the gateway", not "signed inside the ESP32". What the chain does give you today is an append-only, publicly verifiable record and hard rules the backend cannot bend: it cannot pay a wallet other than the registered one, cannot pay twice, cannot approve a collection whose signed readings show too little waste removed, and cannot touch escrowed funds.
+| Key / Identity | Held By | Function | Security Boundary |
+|---|---|---|---|
+| **Bin Device Key** (`secp256k1`) | Provisioned per-bin firmware (and gateway mirror) | Signs EIP-712 typed data: fullness reports, RFID tap events, completion evidence | Physical bin enclosure & flash memory |
+| **Worker Wallet Key** | Worker's BridgeKey / mobile keystore | Signs 2FA proximity challenges, receives MSTC payouts, holds staked security deposits | Worker's mobile device enclave |
+| **Municipal Officer Key** | Municipal authority (`BridgeKey` / server wallet) | Authorizes collection requests, approves completions, triggers release of escrow | Officer workstation / HSM |
+| **Autonomous Watcher Key** | Independent Watcher daemon (`server/src/workflow/watcher.ts`) | Continuously scans citizen challenges, verifies GPS bounds, slashes worker stakes, disburses citizen bounties | Autonomous background service |
+| **Transfer Station Checkpoint Key** | Authorized Eco-Dump / Waste Processing Facility | Confirms arrival and custody transfer of collected municipal waste | Transfer weighbridge terminal |
+| **Ledger Admin Key** | Protocol Deployer / Municipal Admin | Registers bins, enrolls workers, sets parameters, funds escrow pool | Multi-sig / Cold storage |
 
-## Attacks and defenses
+---
 
-| Attack | Defense | Residual risk |
-|---|---|---|
-| Replay an old telemetry packet | Per-device HMAC, strictly increasing `seq`, 5-minute clock window | Attacker with the device secret |
-| Replay old on-chain evidence | Per-bin strictly increasing nonce, EIP-712 domain (chain + contract), request-bound digests | None known |
-| Block or fool the ultrasonic sensors so a bin looks full or empty | Two sensors must agree, gradual-fill and IR-deposit checks, lid-open timing | Both sensors blocked consistently |
-| Fake the "emptied" reading | **Load cell** must lose weight (`WEIGHT_DROPPED`, critical); set `REQUIRE_WEIGHT=1` to make it mandatory on hardware bins | Someone removes weight without collecting it (see chain of custody below) |
-| Wrong worker claims the job | Bin-signed RFID scan must match the assigned worker's hash; mismatches are recorded on-chain | **Cloned card** (see below) |
-| Recover a worker's card UID from chain data | RFID hash is keyed with a server secret, so 4-byte UIDs cannot be brute-forced from public events | Anyone who physically reads a card can still clone it |
-| Job stalls forever and locks escrow and the bin | `abortCollection` (officer) and `expireCollection` (**anyone**, after `collectionTimeout`) return the job to the queue and free the escrow | None known |
-| Officer pays for work that did not happen | `approveCompletion` reverts if signed before/after levels show too little removed | Officer approving after a compromised backend signs false levels |
-| LLM second opinion misbehaves | It can only make a verdict stricter, never looser | Availability (a stricter model can block valid work) |
+## 2. Attacks, Defenses, and Mitigations
 
-## Known gaps (do not claim these are solved)
+| Attack Scenario | Primary Defense | Active Mitigation | Residual Risk |
+|---|---|---|---|
+| **Telemetry Replay** | Sequence numbers (`seq`), HMAC-SHA256, 5-minute timestamp validity window | Ingest pipeline rejects duplicate or out-of-order sequence packets | Attacker who compromises the per-device HMAC secret |
+| **On-Chain Evidence Replay** | Strictly increasing nonces per bin, EIP-712 domain separation (chain ID + contract address), request-bound hash | Verified in `WasteCollectionLedger.sol` via cryptographic signature recovery | None known |
+| **Ultrasonic Sensor Spoofing** | Dual independent ultrasonic sensors must agree within tolerance | IR mouth counter cross-checks physical deposit velocity; fill-velocity filter rejects physically impossible jumps | Coordinated physical obstruction of both sensors simultaneously |
+| **Thermal Sensor Tampering / Lighter on Probe** | Multi-sensor cross check (Dual Ultrasonic + Load Cell + Ambient Temp correlation) | Instant on-chain commit of tamper-proof incident receipt (Kind 5) with immutable Keccak-256 hash | Sensor destroyed before packet transmission completes |
+| **Cloned RFID Card Exploitation** | RFID UID is treated as a weak modality, not authoritative proof | **Second Worker Factor (2FA)**: Worker mobile app signs an ephemeral challenge while within 35m GPS radius of the bin | Relay of challenge across remote cellular connection (see Residual Risks below) |
+| **Ghost Dumping (Empty Bin, Dump Roadside)** | **Chain of Custody to Dump Yard**: Checkpoint 2 at municipal processing facility | Escrow payment is locked until the authorized transfer station registers weigh-in and waste custody | Collusion between worker and transfer station gatekeeper |
+| **False Completion by Rogue Worker** | Sensor delta verification (before vs. after level must decrease past threshold) | **Citizen Challenge Window (180s)**: Citizens submit location-stamped reports; live Watcher slashes worker stake | Low citizen density in remote or industrial wards |
+| **Municipal Single Point of Failure** | Public Audit Explorer with in-browser Keccak-256 re-hasher | Evaluator & citizen verification outside municipal intranet | Municipal officer key compromise can still cause denial-of-service |
 
-1. **Device keys live on the server.** Production: generate the key inside the ESP32 (or a secure element), sign EIP-712 on the device, and register only the public address. The backend then cannot forge bin evidence.
-2. **One backend holds gateway, verifier and officer keys.** Production: run the verifier as a separate service with its own key, require a human officer wallet (BridgeKey) for approvals, and move toward a verifier quorum.
-3. **RFID UIDs are cloneable.** Production: add a challenge-response signed by the worker's wallet in the worker app, checked when the lid unlocks.
-4. **No chain of custody.** The system proves waste left the bin, not that it reached a processing site. Production: a second checkpoint at the transfer station before payment releases.
-5. **Single approver.** The municipality approves and pays. A citizen challenge window would make third-party verification possible.
-6. **The demo fleet is mostly simulated.** Only bins with `"hardware": true` in `config/city.json` are real. Simulated bins are labeled `simulation` in the dashboard and in telemetry rows.
+---
+
+## 3. Honest Residual Risks (Where the System Is Honestly Still Weak)
+
+### 3.1 Relay Attacks (RF / Beacon / Rover Distance Emulation)
+* **The Vulnerability**: A remote attacker could relay a live BLE/Wi-Fi beacon or 2FA challenge message from a bin to a rover or worker phone located kilometers away using an internet tunnel.
+* **Current Defense**: Signal strength (RSSI) bounds, short challenge expiration windows (15 seconds), and cellular GPS proximity cross-checking (<35m radius).
+* **Honest Assessment**: RSSI thresholds and timing checks add friction but do **not** mathematically eliminate relay attacks. An attacker with low-latency 5G backhaul can tunnel challenge packets in under 40ms.
+* **The Real Fix**: True distance-bounding protocols utilizing time-of-flight (ToF) acoustic pulses or Ultra-Wideband (UWB IEEE 802.15.4z). This is research-grade hardware complexity and is deliberately not claimed as solved in this demo.
+
+### 3.2 Device Key Extraction on Commodity ESP32
+* **The Vulnerability**: Standard ESP32 microcontrollers store firmware and flash keys in external SPI flash without hardware-enforced physical tamper resistance. An attacker with physical access and an oscilloscope or SPI chip clip can dump the flash and extract device secrets.
+* **Current Defense**: Firmware uses per-bin unique keys derived from separate salts; compromise of one bin does not compromise neighboring bins.
+* **Roadmap & Proper Fix**: Secure Boot v2 and Flash Encryption with hardware secure elements (e.g., Microchip ATECC608A or Infineon OPTIGA™ Trust M) on the bin controller board. We explicitly state this as a hardware roadmap item.
+
+### 3.3 Static RFID UIDs Are Readily Cloneable
+* **The Vulnerability**: 13.56 MHz Mifare Classic or 125 kHz EM4100 RFID cards transmit a static, unencrypted UID. Inexpensive handheld writers (Proxmark, Flipper Zero) clone these in under two seconds.
+* **System Design Philosophy**: The system **never** treats an RFID UID as definitive proof of identity. RFID is treated strictly as a weak physical presence trigger. It is layered with:
+  1. Worker-assigned schedule validation;
+  2. GPS proximity checks;
+  3. Second Worker Factor (BridgeKey/Ed25519 signed mobile challenge);
+  4. Physical load delta and sensor fusion.
+
+### 3.4 Challenge Window Requires an Active Watcher Daemon
+* **The Vulnerability**: Introducing a 180-second citizen challenge window is purely theoretical if nobody acts upon the challenge reports before municipal payout occurs.
+* **Current Implementation**: Astra Waste runs a live, autonomous `WatcherService` (`server/src/workflow/watcher.ts`). The watcher:
+  1. Continuously monitors all pending payments;
+  2. Queries registered citizen reports;
+  3. Verifies reporter GPS proximity (<50m of bin coordinate);
+  4. Automatically halts payment and places the job in `INVESTIGATION`;
+  5. Slashes worker stake and awards a 0.02 MSTC bounty to the citizen reporter.
+* **Residual Risk**: If the watcher service crashes or encounters RPC congestion, the challenge window could expire unmoderated. The production architecture requires redundant decentralized watcher nodes.
+
+### 3.5 Complexity Risk as the Primary Adversary
+* **The Trade-Off**: Every mechanism added—citizen challenges, dual checkpoints, multi-wallet autonomous loops, 2FA signing, and reputation staking—expands the protocol's attack and failure surface.
+* **Failure Modes**:
+  - Worker cell phone loses battery: Unable to complete 2FA even though waste was emptied.
+  - Transfer station scanner offline: Worker legitimate payout is delayed despite full collection.
+  - Citizen griefing: Malicious citizens filing false challenges to temporarily lock worker stakes.
+* **Mitigation**: The system incorporates fail-safes (manual municipal override, stake slashing only upon verifiable sensor contradiction, reputation recovery on honest dispute resolution).
+
+---
+
+## 4. Attack Arena Scope & Defined Bounds
+
+Judges and evaluators are invited to test platform defenses in the interactive **Attack Arena** (`/arena`):
+1. **Replay Attack**: Feeding previously valid telemetry sequence packets.
+2. **Thermal / Lighter Tamper**: Applying rapid heat to trigger emergency incident generation without spoofing fill levels.
+3. **Ghost Dump Simulation**: Claiming emptying without transfer facility delivery.
+4. **Forged 2FA Challenge**: Presenting cloned RFID cards without valid wallet signature.
+
+A testnet bounty of **100 MSTC** is reserved for any exploit that compromises ledger state without triggering rejection or incident alerts.

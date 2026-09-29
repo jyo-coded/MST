@@ -1,5 +1,20 @@
 import clsx from "clsx";
-import { Check, CircleX, Fingerprint, LocateFixed, LogOut, Navigation, Trash2, Truck, Wallet } from "lucide-react";
+import {
+  Award,
+  Check,
+  CheckCircle2,
+  CircleX,
+  Clock,
+  Fingerprint,
+  KeyRound,
+  LocateFixed,
+  LogOut,
+  Navigation,
+  ShieldCheck,
+  Trash2,
+  Truck,
+  Wallet,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -70,22 +85,28 @@ function StatusCard({ data, rate }: { data: MeJob; rate: number }) {
   const w = data.worker;
   const busy = ["ASSIGNED", "EN_ROUTE", "AT_BIN", "COLLECTING"].includes(w.status);
   return (
-    <section className="panel grid grid-cols-3 divide-x divide-line-2 overflow-hidden">
-      <div className="px-3.5 py-3">
-        <div className="text-[11.5px] text-ink-3">Status</div>
+    <section className="panel grid grid-cols-4 divide-x divide-line-2 overflow-hidden text-center sm:text-left">
+      <div className="px-3 py-3">
+        <div className="text-[11px] text-ink-3">Status</div>
         <div className="mt-1">
           <Pill tone={busy ? "progress" : w.status === "AWAITING_VERIFICATION" ? "warning" : "success"} pulse={busy}>
             {w.statusLabel}
           </Pill>
         </div>
       </div>
-      <div className="px-3.5 py-3">
-        <div className="text-[11.5px] text-ink-3">Earned</div>
-        <div className="mt-0.5 text-[18px] font-semibold tracking-[-0.01em] num">{inr(Number(w.earnedMstc) * rate)}</div>
+      <div className="px-3 py-3">
+        <div className="text-[11px] text-ink-3">Earned</div>
+        <div className="mt-0.5 text-[16px] font-semibold tracking-[-0.01em] num">{inr(Number(w.earnedMstc) * rate)}</div>
       </div>
-      <div className="px-3.5 py-3">
-        <div className="text-[11.5px] text-ink-3">Jobs done</div>
-        <div className="mt-0.5 text-[18px] font-semibold tracking-[-0.01em] num">{w.completed}</div>
+      <div className="px-3 py-3">
+        <div className="text-[11px] text-ink-3">Jobs</div>
+        <div className="mt-0.5 text-[16px] font-semibold tracking-[-0.01em] num">{w.completed}</div>
+      </div>
+      <div className="px-3 py-3">
+        <div className="text-[11px] text-ink-3">Rep · Stake</div>
+        <div className="mt-0.5 text-[13px] font-semibold tracking-[-0.01em] text-ink">
+          {w.reputationScore ?? 100} <span className="text-[11px] font-normal text-ink-3">({w.stakeLockedMstc ?? "0.04"}M)</span>
+        </div>
       </div>
     </section>
   );
@@ -134,6 +155,37 @@ function JobCard({ data }: { data: MeJob }) {
   const atBin = distKm * 1000 <= 40;
   const lastRfid = d.rfidEvents.at(-1);
   const refused = lastRfid && !["RFID_VERIFIED", "VERIFICATION_PENDING"].includes(lastRfid.result);
+  const [signing2FA, setSigning2FA] = useState(false);
+  const [checkingTransfer, setCheckingTransfer] = useState(false);
+
+  const sign2FA = async () => {
+    setSigning2FA(true);
+    try {
+      await post("/worker/verify-2fa", {
+        requestId: r.id,
+        workerId: data.worker.id,
+        binId: bin.id,
+        workerLat: pos.lat,
+        workerLng: pos.lng,
+      });
+      qc.invalidateQueries({ queryKey: ["me-job"] });
+    } finally {
+      setSigning2FA(false);
+    }
+  };
+
+  const checkinTransfer = async () => {
+    setCheckingTransfer(true);
+    try {
+      await post("/transfer-station/checkin", {
+        requestId: r.id,
+        facilityId: "TRANSFER-ECODUMP-NORTH",
+      });
+      qc.invalidateQueries({ queryKey: ["me-job"] });
+    } finally {
+      setCheckingTransfer(false);
+    }
+  };
 
   const step = r.status === "ASSIGNED" || r.status === "EN_ROUTE" ? (atBin || data.worker.status === "AT_BIN" ? 1 : 0) : r.status === "COLLECTING" ? 2 : 3;
   const steps = [
@@ -257,6 +309,62 @@ function JobCard({ data }: { data: MeJob }) {
           {lastRfid.tx && <span className="text-ink-3">· recorded on-chain</span>}
         </div>
       )}
+
+      {/* 2FA Section */}
+      <div className="border-t border-line-2 px-4 py-3 space-y-2">
+        <div className="flex items-center justify-between text-[12.5px]">
+          <span className="flex items-center gap-2 font-medium text-ink">
+            <KeyRound className="h-4 w-4 text-prog" /> Second Worker Factor (2FA)
+          </span>
+          {r.secondFactorVerified ? (
+            <span className="flex items-center gap-1 text-[12px] text-good font-medium">
+              <CheckCircle2 className="h-3.5 w-3.5" /> Verified
+            </span>
+          ) : (
+            <span className="text-[11.5px] text-warn font-medium">Pending 2FA</span>
+          )}
+        </div>
+        {!r.secondFactorVerified && (
+          <Button
+            size="sm"
+            variant="secondary"
+            className="w-full text-[12.5px]"
+            loading={signing2FA}
+            icon={<ShieldCheck className="h-4 w-4" />}
+            onClick={sign2FA}
+          >
+            Sign 2FA Proximity Challenge (BridgeKey)
+          </Button>
+        )}
+      </div>
+
+      {/* Transfer Station Section */}
+      <div className="border-t border-line-2 px-4 py-3 space-y-2">
+        <div className="flex items-center justify-between text-[12.5px]">
+          <span className="flex items-center gap-2 font-medium text-ink">
+            <Truck className="h-4 w-4 text-prog" /> Transfer Station Delivery
+          </span>
+          {r.transferVerified ? (
+            <span className="flex items-center gap-1 text-[12px] text-good font-medium">
+              <CheckCircle2 className="h-3.5 w-3.5" /> Check-in Verified
+            </span>
+          ) : (
+            <span className="text-[11.5px] text-warn font-medium">Delivery Required</span>
+          )}
+        </div>
+        {!r.transferVerified && (
+          <Button
+            size="sm"
+            variant="secondary"
+            className="w-full text-[12.5px]"
+            loading={checkingTransfer}
+            icon={<Truck className="h-4 w-4" />}
+            onClick={checkinTransfer}
+          >
+            Check In at Eco-Dump Transfer Station
+          </Button>
+        )}
+      </div>
     </section>
   );
 }
@@ -264,6 +372,8 @@ function JobCard({ data }: { data: MeJob }) {
 function NoJob({ data }: { data: MeJob }) {
   const last = data.job;
   const r = last?.request;
+  const qc = useQueryClient();
+  const [checkingTransfer, setCheckingTransfer] = useState(false);
   return (
     <section className="panel px-4 py-5">
       {!r ? (
@@ -293,7 +403,34 @@ function NoJob({ data }: { data: MeJob }) {
             </div>
           </div>
           {r.status === "AWAITING_FINAL_APPROVAL" && <p className="mt-3 text-[12.5px] text-ink-2">The collection was verified. Waiting for the municipality to approve it.</p>}
-          {r.status === "INVESTIGATION" && <p className="mt-3 text-[12.5px] text-warn">The readings didn't confirm the bin was emptied. The municipality is reviewing it.</p>}
+          {r.status === "AWAITING_FINAL_APPROVAL" && !r.transferVerified && (
+            <div className="mt-3 rounded-md border border-warn-line bg-warn-bg p-3 text-[12.5px] text-warn space-y-2">
+              <div className="font-semibold">Chain of Custody Checkpoint Required</div>
+              <p className="text-ink-2">Deliver waste to the Eco-Dump facility to finalize collection and release your payment.</p>
+              <Button
+                size="sm"
+                variant="primary"
+                className="w-full"
+                loading={checkingTransfer}
+                icon={<Truck className="h-4 w-4" />}
+                onClick={async () => {
+                  setCheckingTransfer(true);
+                  try {
+                    await post("/transfer-station/checkin", {
+                      requestId: r.id,
+                      facilityId: "TRANSFER-ECODUMP-NORTH",
+                    });
+                    qc.invalidateQueries({ queryKey: ["me-job"] });
+                  } finally {
+                    setCheckingTransfer(false);
+                  }
+                }}
+              >
+                Register Eco-Dump Delivery
+              </Button>
+            </div>
+          )}
+          {r.status === "INVESTIGATION" && <p className="mt-3 text-[12.5px] text-warn">The readings didn't confirm the bin was emptied or citizen filed a challenge. The municipality is reviewing it.</p>}
           {r.status === "REJECTED" && <p className="mt-3 text-[12.5px] text-bad">{r.rejectionReason ?? "The collection was rejected."}</p>}
         </>
       )}

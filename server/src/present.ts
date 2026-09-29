@@ -57,6 +57,10 @@ export function presentBin(b: any, extra: { request?: any } = {}) {
 }
 
 export function presentWorker(w: any, extra: Record<string, unknown> = {}) {
+  const completed = w.completed_count || 0;
+  const stakeDiscount = Math.min(0.04, completed * 0.005);
+  const requiredStake = Math.max(0.01, 0.05 - stakeDiscount);
+
   return {
     id: w.id,
     name: w.name,
@@ -74,6 +78,10 @@ export function presentWorker(w: any, extra: Record<string, unknown> = {}) {
     locationUpdatedAt: iso(w.location_updated_at),
     completed: w.completed_count,
     rejected: w.rejected_count,
+    reputationScore: w.reputation_score ?? 100,
+    slashedCount: w.slashed_count ?? 0,
+    stakeLockedMstc: mst(w.stake_locked_wei),
+    requiredStakeMstc: requiredStake.toFixed(3),
     onChain: w.on_chain,
     ...extra,
   };
@@ -112,6 +120,12 @@ export function presentRequest(r: any) {
     paymentStatus: r.payment_status ?? null,
     paymentStatusLabel: r.payment_status ? PAYMENT.labels[r.payment_status as keyof typeof PAYMENT.labels] : null,
     scenario: r.scenario,
+    transferVerified: !!r.transfer_verified,
+    transferVerifiedAt: iso(r.transfer_verified_at),
+    transferFacility: r.transfer_facility ?? null,
+    challengeStatus: r.challenge_status ?? "OPEN",
+    challengeWindowEndsAt: iso(r.challenge_window_ends_at),
+    secondFactorVerified: !!r.second_factor_verified,
     createdAt: iso(r.created_at),
     updatedAt: iso(r.updated_at),
     completedAt: iso(r.completed_at),
@@ -292,6 +306,59 @@ export function presentAssignment(a: any) {
     rfidAt: iso(a.rfid_at),
     startedAt: iso(a.started_at),
     finishedAt: iso(a.finished_at),
+  };
+}
+
+export function presentChallenge(c: any) {
+  return {
+    id: c.id,
+    requestId: c.request_id,
+    binId: c.bin_id,
+    citizenAddress: c.citizen_address,
+    citizenName: c.citizen_name ?? null,
+    lat: c.lat,
+    lng: c.lng,
+    distanceToBinM: c.distance_to_bin_m !== null ? Math.round(Number(c.distance_to_bin_m)) : null,
+    note: c.note,
+    photoUrl: c.photo_url ?? null,
+    bountyMstc: c.bounty_mstc,
+    status: c.status,
+    watcherVerified: !!c.watcher_verified,
+    createdAt: iso(c.created_at),
+    resolvedAt: iso(c.resolved_at),
+  };
+}
+
+export function presentWitness(w: any) {
+  return {
+    id: w.id,
+    requestId: w.request_id,
+    binId: w.bin_id,
+    witnessName: w.witness_name,
+    witnessAddress: w.witness_address,
+    role: w.role,
+    statement: w.statement,
+    signature: w.signature,
+    evidenceHash: w.evidence_hash,
+    createdAt: iso(w.created_at),
+  };
+}
+
+export function presentIncidentReceipt(r: any) {
+  return {
+    id: r.id,
+    incidentId: r.incident_id,
+    kind: r.kind,
+    binId: r.bin_id,
+    requestId: r.request_id,
+    temperatureC: r.temperature_c,
+    detailsHash: r.details_hash,
+    txHash: r.tx_hash,
+    blockNumber: r.block_number ? Number(r.block_number) : null,
+    insurancePolicy: r.insurance_policy,
+    claimStatus: r.claim_status,
+    rawBundle: r.raw_bundle,
+    createdAt: iso(r.created_at),
   };
 }
 

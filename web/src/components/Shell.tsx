@@ -6,11 +6,13 @@ import {
   Blocks,
   ClipboardList,
   Cpu,
+  ExternalLink,
   FlaskConical,
   LayoutGrid,
   LogOut,
   Map as MapIcon,
   Settings,
+  ShieldAlert,
   Trash2,
   Truck,
   Users,
@@ -52,6 +54,8 @@ const NAV: { group: string; items: { to: string; label: string; icon: ReactNode;
     items: [
       { to: "/app/payments", label: "Payments", icon: <Wallet className="h-[17px] w-[17px]" />, badge: "payments" },
       { to: "/app/audit", label: "Blockchain audit", icon: <Blocks className="h-[17px] w-[17px]" /> },
+      { to: "/audit", label: "Public audit explorer", icon: <ExternalLink className="h-[17px] w-[17px]" /> },
+      { to: "/arena", label: "Attack Arena ⚔️", icon: <ShieldAlert className="h-[17px] w-[17px]" /> },
     ],
   },
   {

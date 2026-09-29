@@ -20,6 +20,9 @@ import { Verification } from "./pages/Verification";
 import { WorkerProfile } from "./pages/WorkerProfile";
 import { Workers } from "./pages/Workers";
 import { WorkerApp } from "./pages/worker/WorkerApp";
+import { PublicAudit } from "./pages/PublicAudit";
+import { AttackArena } from "./pages/AttackArena";
+import { JudgeWitness } from "./pages/JudgeWitness";
 
 function RequireRole({ roles, children }: { roles: string[]; children: ReactNode }) {
   const user = useSession((s) => s.user);
@@ -55,6 +58,9 @@ function MunicipalApp() {
         <Route path="workers/:id" element={<WorkerProfile />} />
         <Route path="payments" element={<Payments />} />
         <Route path="audit" element={<Audit />} />
+        <Route path="public-audit" element={<PublicAudit />} />
+        <Route path="arena" element={<AttackArena />} />
+        <Route path="witness" element={<JudgeWitness />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/app" replace />} />
@@ -67,6 +73,11 @@ export function App() {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
+      <Route path="/audit" element={<PublicAudit />} />
+      <Route path="/public-audit" element={<PublicAudit />} />
+      <Route path="/arena" element={<AttackArena />} />
+      <Route path="/attack-arena" element={<AttackArena />} />
+      <Route path="/witness" element={<JudgeWitness />} />
       <Route
         path="/app/*"
         element={

@@ -51,6 +51,16 @@ export const SIDE_EVENTS: Record<string, { label: string; tone: Tone }> = {
   COMPLETION_REJECTED: { label: "Completion rejected", tone: "danger" },
   PAYMENT_FAILED: { label: "Payment failed", tone: "danger" },
   INCIDENT_RECORDED: { label: "Incident recorded on-chain", tone: "warning" },
+  TRANSFER_STATION_VERIFIED: { label: "Transfer station / dump yard verified", tone: "progress" },
+  CITIZEN_CHALLENGE_FILED: { label: "Citizen challenge filed", tone: "warning" },
+  CHALLENGE_UPHELD: { label: "Challenge upheld by watcher", tone: "danger" },
+  WORKER_STAKE_SLASHED: { label: "Worker stake slashed", tone: "danger" },
+  SECOND_FACTOR_VERIFIED: { label: "Worker 2FA signed + proximity verified", tone: "success" },
+  SECOND_FACTOR_FAILED: { label: "Worker 2FA failed / proximity out of bounds", tone: "danger" },
+  JUDGE_WITNESS_ATTESTED: { label: "Judge witness attestation signed", tone: "info" },
+  OFFLINE_QUEUE_FLUSHED: { label: "Offline telemetry queue synced", tone: "info" },
+  INCIDENT_RECEIPT_COMMITTED: { label: "Tamper-proof incident receipt committed", tone: "warning" },
+  ROBOT_M2M_SETTLED: { label: "Self-funding robot 4-wallet loop settled", tone: "success" },
 };
 
 export function stageLabel(stage: string): string {
@@ -357,6 +367,12 @@ export const TX_ACTION: Record<string, string> = {
   WORKER_PAYMENT: "Worker Payment",
   INCIDENT: "Incident Record",
   POLICY_UPDATE: "Policy Update",
+  TRANSFER_CHECKPOINT: "Transfer Checkpoint",
+  CITIZEN_BOUNTY: "Citizen Bounty Payout",
+  WORKER_SLASH: "Worker Stake Slashing",
+  INCIDENT_RECEIPT: "Incident Insurance Receipt",
+  WITNESS_ATTESTATION: "Witness Attestation",
+  ROBOT_LOOP: "Robot M2M Value Loop",
 };
 
 export const TX_STATUS = {
@@ -371,6 +387,10 @@ export const INCIDENT_KIND: Record<number, string> = {
   2: "RFID_ABUSE",
   3: "BIN_OFFLINE",
   4: "TELEMETRY_TAMPER",
+  5: "FIRE_HAZARD",
+  6: "CITIZEN_CHALLENGE",
+  7: "TRANSFER_CHECKPOINT",
+  8: "WITNESS_ATTESTATION",
 };
 
 // ---------------------------------------------------------------------------

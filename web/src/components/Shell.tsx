@@ -77,18 +77,16 @@ export function AppShell({ children, badges }: { children: ReactNode; badges: Re
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar onDemo={() => setDirectorOpen(true)} onMenu={() => setNavOpen(true)} />
         <main className="min-h-0 flex-1 overflow-y-auto scroll-thin">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={location.pathname}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-              className="mx-auto w-full max-w-[1480px] px-5 pb-16 pt-7 sm:px-8"
-            >
-              {children}
-            </motion.div>
-          </AnimatePresence>
+          {/* Enter-only transition: a "wait" exit can stall and leave the page blank. */}
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            className="mx-auto w-full max-w-[1480px] px-5 pb-16 pt-7 sm:px-8"
+          >
+            {children}
+          </motion.div>
         </main>
       </div>
       <DemoDirector open={directorOpen} onClose={() => setDirectorOpen(false)} />

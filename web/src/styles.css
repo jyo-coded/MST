@@ -203,3 +203,8 @@
     animation: none;
   }
 }
+
+/* OpenStreetMap tiles, muted to sit behind the data. */
+.leaflet-tile-pane {
+  filter: grayscale(0.85) contrast(0.92) brightness(1.04);
+}

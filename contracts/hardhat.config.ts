@@ -4,7 +4,7 @@ import * as dotenv from "dotenv";
 import path from "node:path";
 
 // All secrets live in the repo-root .env (see .env.example).
-dotenv.config({ path: process.env.CIVICPROOF_ENV || path.resolve(__dirname, "../.env") });
+dotenv.config({ path: process.env.ASTRA_ENV || path.resolve(__dirname, "../.env") });
 
 const ADMIN_PRIVATE_KEY = process.env.ADMIN_PRIVATE_KEY;
 const accounts = ADMIN_PRIVATE_KEY ? [ADMIN_PRIVATE_KEY] : [];
@@ -20,6 +20,12 @@ const config: HardhatUserConfig = {
     },
   },
   networks: {
+    // `npm run chain`: a local rehearsal chain. Interval mining keeps
+    // block.timestamp moving like a live network, so device timestamps are
+    // judged against the current time, not the last transaction.
+    hardhat: {
+      mining: { auto: true, interval: 3000 },
+    },
     localhost: {
       url: "http://127.0.0.1:8545",
     },

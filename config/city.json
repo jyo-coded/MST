@@ -1,0 +1,49 @@
+{
+  "municipality": {
+    "id": "MUN-01",
+    "name": "Municipal Corporation",
+    "city": "Indore",
+    "ward": "Central Zone",
+    "center": { "lat": 22.7196, "lng": 75.8650 }
+  },
+  "bins": [
+    { "id": "BIN-001", "name": "Rajwada Heritage Plaza", "address": "Rajwada Chowk, Old Palasia Rd", "zone": "Zone 1 · Rajwada", "lat": 22.71872, "lng": 75.85538, "capacityLitres": 240, "depthCm": 60, "hardware": true, "startFill": 34 },
+    { "id": "BIN-002", "name": "Sarafa Night Market", "address": "Sarafa Bazaar, near Kanch Mandir", "zone": "Zone 1 · Rajwada", "lat": 22.71762, "lng": 75.85602, "capacityLitres": 660, "depthCm": 110, "startFill": 71 },
+    { "id": "BIN-003", "name": "Malharganj Market", "address": "Malharganj Main Rd", "zone": "Zone 1 · Rajwada", "lat": 22.72655, "lng": 75.84451, "capacityLitres": 240, "depthCm": 60, "startFill": 42 },
+    { "id": "BIN-004", "name": "Regal Square", "address": "Regal Chauraha, MG Road", "zone": "Zone 2 · MG Road", "lat": 22.71891, "lng": 75.86862, "capacityLitres": 660, "depthCm": 110, "startFill": 58 },
+    { "id": "BIN-005", "name": "Railway Station East Gate", "address": "Indore Jn, Platform 1 approach", "zone": "Zone 2 · MG Road", "lat": 22.71788, "lng": 75.86802, "capacityLitres": 1100, "depthCm": 130, "startFill": 76 },
+    { "id": "BIN-006", "name": "Treasure Island Mall", "address": "MG Road, South Tukoganj", "zone": "Zone 2 · MG Road", "lat": 22.72104, "lng": 75.87896, "capacityLitres": 660, "depthCm": 110, "startFill": 23 },
+    { "id": "BIN-007", "name": "Geeta Bhawan Square", "address": "Geeta Bhawan Chauraha", "zone": "Zone 3 · Palasia", "lat": 22.71742, "lng": 75.88703, "capacityLitres": 240, "depthCm": 60, "startFill": 49 },
+    { "id": "BIN-008", "name": "Chhappan Dukan", "address": "56 Dukan, New Palasia", "zone": "Zone 3 · Palasia", "lat": 22.72371, "lng": 75.88442, "capacityLitres": 1100, "depthCm": 130, "startFill": 74 },
+    { "id": "BIN-009", "name": "Palasia Square", "address": "AB Road, Palasia", "zone": "Zone 3 · Palasia", "lat": 22.72442, "lng": 75.88391, "capacityLitres": 660, "depthCm": 110, "startFill": 37 },
+    { "id": "BIN-010", "name": "LIG Square", "address": "LIG Colony, AB Road", "zone": "Zone 4 · Vijay Nagar", "lat": 22.73281, "lng": 75.88712, "capacityLitres": 240, "depthCm": 60, "startFill": 18 },
+    { "id": "BIN-011", "name": "Vijay Nagar Square", "address": "Vijay Nagar Chauraha, AB Road", "zone": "Zone 4 · Vijay Nagar", "lat": 22.75331, "lng": 75.89372, "capacityLitres": 1100, "depthCm": 130, "startFill": 62 },
+    { "id": "BIN-012", "name": "Scheme 54 Park", "address": "Scheme No. 54, PU-4", "zone": "Zone 4 · Vijay Nagar", "lat": 22.75602, "lng": 75.89604, "capacityLitres": 240, "depthCm": 60, "startFill": 29 },
+    { "id": "BIN-013", "name": "Nanda Nagar Main Rd", "address": "Nanda Nagar, Road No. 13", "zone": "Zone 5 · Nanda Nagar", "lat": 22.74213, "lng": 75.87031, "capacityLitres": 240, "depthCm": 60, "startFill": 44 },
+    { "id": "BIN-014", "name": "Khajrana Ganesh Mandir", "address": "Khajrana Temple Rd", "zone": "Zone 5 · Nanda Nagar", "lat": 22.73822, "lng": 75.90671, "capacityLitres": 1100, "depthCm": 130, "startFill": 78 },
+    { "id": "BIN-015", "name": "Tilak Nagar Main Rd", "address": "Tilak Nagar, Sector B", "zone": "Zone 6 · Tilak Nagar", "lat": 22.71642, "lng": 75.89862, "capacityLitres": 240, "depthCm": 60, "startFill": 33 },
+    { "id": "BIN-016", "name": "Bengali Square", "address": "Bengali Chauraha, Ring Rd", "zone": "Zone 6 · Tilak Nagar", "lat": 22.71521, "lng": 75.90623, "capacityLitres": 660, "depthCm": 110, "startFill": 55 },
+    { "id": "BIN-017", "name": "Kanadia Road Market", "address": "Kanadia Rd, near Sai Mandir", "zone": "Zone 6 · Tilak Nagar", "lat": 22.70932, "lng": 75.90722, "capacityLitres": 240, "depthCm": 60, "startFill": 21 },
+    { "id": "BIN-018", "name": "Musakhedi Chauraha", "address": "Musakhedi Square", "zone": "Zone 7 · Bhawarkuan", "lat": 22.70021, "lng": 75.89692, "capacityLitres": 240, "depthCm": 60, "startFill": 47 },
+    { "id": "BIN-019", "name": "Navlakha Bus Stand", "address": "Navlakha Square, AB Road", "zone": "Zone 7 · Bhawarkuan", "lat": 22.69972, "lng": 75.87662, "capacityLitres": 1100, "depthCm": 130, "startFill": 52, "offline": true },
+    { "id": "BIN-020", "name": "Bhawarkuan Square", "address": "Bhawarkuan Chauraha", "zone": "Zone 7 · Bhawarkuan", "lat": 22.69271, "lng": 75.86742, "capacityLitres": 660, "depthCm": 110, "startFill": 64 },
+    { "id": "BIN-021", "name": "Sapna Sangeeta Rd", "address": "Sapna Sangeeta Main Rd", "zone": "Zone 8 · Annapurna", "lat": 22.70342, "lng": 75.87021, "capacityLitres": 240, "depthCm": 60, "startFill": 39 },
+    { "id": "BIN-022", "name": "Annapurna Mandir", "address": "Annapurna Temple, Annapurna Rd", "zone": "Zone 8 · Annapurna", "lat": 22.69582, "lng": 75.83751, "capacityLitres": 660, "depthCm": 110, "startFill": 27 },
+    { "id": "BIN-023", "name": "Sudama Nagar", "address": "Sudama Nagar, Sector D", "zone": "Zone 8 · Annapurna", "lat": 22.69882, "lng": 75.82903, "capacityLitres": 240, "depthCm": 60, "startFill": 61 },
+    { "id": "BIN-024", "name": "Rajendra Nagar", "address": "Rajendra Nagar Main Rd", "zone": "Zone 8 · Annapurna", "lat": 22.68261, "lng": 75.83731, "capacityLitres": 240, "depthCm": 60, "startFill": 15 }
+  ],
+  "workers": [
+    { "id": "WRK-001", "name": "Ramesh Yadav", "phone": "+91 98260 11001", "zone": "Zone 1 · Rajwada", "rfidUid": "A1B2C3D4", "lat": 22.7231, "lng": 75.8612 },
+    { "id": "WRK-002", "name": "Sunita Bai", "phone": "+91 98260 11002", "zone": "Zone 2 · MG Road", "rfidUid": "B7E41A09", "lat": 22.7141, "lng": 75.8735 },
+    { "id": "WRK-003", "name": "Imran Khan", "phone": "+91 98260 11003", "zone": "Zone 3 · Palasia", "rfidUid": "C3D98F12", "lat": 22.7275, "lng": 75.8912 },
+    { "id": "WRK-004", "name": "Lakshmi Verma", "phone": "+91 98260 11004", "zone": "Zone 4 · Vijay Nagar", "rfidUid": "D05A6B77", "lat": 22.7482, "lng": 75.8851 },
+    { "id": "WRK-005", "name": "Deepak Malviya", "phone": "+91 98260 11005", "zone": "Zone 5 · Nanda Nagar", "rfidUid": "E91C2D48", "lat": 22.7355, "lng": 75.8768 },
+    { "id": "WRK-006", "name": "Farida Sheikh", "phone": "+91 98260 11006", "zone": "Zone 6 · Tilak Nagar", "rfidUid": "F2837AB1", "lat": 22.7112, "lng": 75.8998 },
+    { "id": "WRK-007", "name": "Arjun Chouhan", "phone": "+91 98260 11007", "zone": "Zone 7 · Bhawarkuan", "rfidUid": "0A4F9C3E", "lat": 22.6978, "lng": 75.8804 },
+    { "id": "WRK-008", "name": "Kavita Solanki", "phone": "+91 98260 11008", "zone": "Zone 8 · Annapurna", "rfidUid": "1B6E0D52", "lat": 22.6931, "lng": 75.8387 }
+  ],
+  "users": [
+    { "id": "USR-OFFICER", "name": "Priya Sharma", "email": "officer@municipal.demo", "role": "officer" },
+    { "id": "USR-ADMIN", "name": "Operations Admin", "email": "admin@municipal.demo", "role": "admin" }
+  ]
+}

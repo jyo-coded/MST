@@ -1,0 +1,37 @@
+{
+  "name": "@astra/server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false src/main.ts",
+    "start": "tsx src/main.ts",
+    "local": "tsx scripts/local.ts",
+    "keys": "tsx scripts/keys.ts",
+    "deploy": "tsx scripts/deploy.ts",
+    "setup": "tsx scripts/setup.ts",
+    "doctor": "tsx scripts/doctor.ts",
+    "device": "tsx scripts/device-config.ts",
+    "artifact": "tsx scripts/artifact.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test test/*.test.ts"
+  },
+  "dependencies": {
+    "@astra/shared": "*",
+    "@electric-sql/pglite": "^0.2.17",
+    "@mstblockchain/mst-sdk": "^1.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.16.0",
+    "express": "^4.21.1",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.16.10",
+    "@types/pg": "^8.11.10",
+    "tsx": "^4.19.1",
+    "typescript": "^5.5.4"
+  }
+}
